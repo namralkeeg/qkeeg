@@ -36,7 +36,8 @@ SOURCES += #\
 HEADERS += \
     src/common/stringutils.hpp \
     src/common/macrohelpers.hpp \
-    src/common/enums.hpp
+    src/common/enums.hpp \
+    src/common/endian.hpp
 
 unix {
     target.path = /usr/lib
