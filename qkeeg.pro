@@ -32,10 +32,12 @@ OBJECTS_DIR = $${INTERMEDIATE}/.obj
 INCLUDEPATH += src
 
 SOURCES += #\
-        #qkeeg.cpp
 
-HEADERS += #\
-        #qkeeg.hpp
+HEADERS += \
+    src/common/stringutils.hpp \
+    src/common/macrohelpers.hpp \
+    src/common/enums.hpp
+
 unix {
     target.path = /usr/lib
     INSTALLS += target
