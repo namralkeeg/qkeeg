@@ -24,6 +24,7 @@
 
 #include <common/macrohelpers.hpp>
 #include <QtEndian>
+#include <QSysInfo>
 
 namespace qkeeg {
 
@@ -236,6 +237,45 @@ inline void native_to_little_inplace(T &x)
 {
     static_assert(std::is_integral<T>::value, "T must be any integral type.");
     x = native_to_little(x);
+}
+
+template<typename T>
+inline T convertToEndian(const T &data, const QSysInfo::Endian &endian)
+{
+    static_assert(std::is_integral<T>::value, "T must be any integral type!");
+
+    T buffer;
+
+    switch (endian) {
+    case QSysInfo::Endian::BigEndian:
+        buffer = native_to_big(data);
+        break;
+    case QSysInfo::Endian::LittleEndian:
+        buffer = native_to_little(data);
+        break;
+    default:
+        buffer = data;
+        break;
+    }
+
+    return buffer;
+}
+
+template<typename T>
+inline void convertToEndianInplace(T &data, const QSysInfo::Endian &endian)
+{
+    static_assert(std::is_integral<T>::value, "T must be any integral type!");
+
+    switch (endian) {
+    case QSysInfo::Endian::BigEndian:
+        native_to_big_inplace(data);
+        break;
+    case QSysInfo::Endian::LittleEndian:
+        native_to_little_inplace(data);
+        break;
+    default:
+        break;
+    }
 }
 
 } // namespace qkeeg
