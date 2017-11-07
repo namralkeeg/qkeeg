@@ -24,6 +24,34 @@
 
 #include <QtGlobal>
 
+/// define endianess and prefetching
+#if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
+    #define __LITTLE_ENDIAN 1234
+    #define __BIG_ENDIAN    4321
+    #define __PDP_ENDIAN	3412
+    #define __BYTE_ORDER    __LITTLE_ENDIAN
+
+    /// includes intrinsic cpu instructions.
+    #include <intrin.h>
+    #if defined(__MINGW32__) || defined(__MINGW64__)
+        // includes intrinsic cpu instructions.
+        #include <x86intrin.h>
+        #define PREFETCH(location) __builtin_prefetch(location)
+    #else
+        #define PREFETCH(location) _mm_prefetch(location, _MM_HINT_T0)
+    #endif
+#else
+    // defines __BYTE_ORDER as __LITTLE_ENDIAN or __BIG_ENDIAN
+    #include <sys/param.h>
+    // includes intrinsic cpu instructions.
+    #include <x86intrin.h>
+    #ifdef __GNUC__
+        #define PREFETCH(location) __builtin_prefetch(location)
+    #else
+        #define PREFETCH(location) ;
+    #endif
+#endif
+
 /// Try to determine endianness at runtime.
 #define IS_BIG_ENDIANV1 (!*(unsigned char *)&(quint16){1})
 #define IS_BIG_ENDIANV2 (*(quint16 *)"\0\xff" < 0x100)
