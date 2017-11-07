@@ -107,22 +107,27 @@ qint64 readBytes(QIODevice &instream, QByteArray &data, const quint32 &length)
     return readBytes(instream, data, length, 0);
 }
 
-qint64 readBString(QIODevice &instream, QString &data, const char *encoding, const QSysInfo::Endian &endian)
+qint64 readBString(QIODevice &instream, QString &data, QTextCodec *codec, const QSysInfo::Endian &endian)
 {
-    return readPrefixString<quint8>(instream, data, encoding, endian, false);
+    return readPrefixString<quint8>(instream, data, codec, endian, false);
 }
 
-qint64 readWString(QIODevice &instream, QString &data, const char *encoding, const QSysInfo::Endian &endian)
+qint64 readBZString(QIODevice &instream, QString &data, QTextCodec *codec, const QSysInfo::Endian &endian)
 {
-    return readPrefixString<quint16>(instream, data, encoding, endian, false);
+    return readPrefixString<quint8>(instream, data, codec, endian, true);
 }
 
-qint64 readWZString(QIODevice &instream, QString &data, const char *encoding, const QSysInfo::Endian &endian)
+qint64 readWString(QIODevice &instream, QString &data, QTextCodec *codec, const QSysInfo::Endian &endian)
 {
-    return readPrefixString<quint16>(instream, data, encoding, endian, true);
+    return readPrefixString<quint16>(instream, data, codec, endian, false);
 }
 
-qint64 readZString(QIODevice &instream, QString &data, const char *encoding)
+qint64 readWZString(QIODevice &instream, QString &data, QTextCodec *codec, const QSysInfo::Endian &endian)
+{
+    return readPrefixString<quint16>(instream, data, codec, endian, true);
+}
+
+qint64 readZString(QIODevice &instream, QString &data, QTextCodec *codec)
 {
     try
     {
@@ -130,19 +135,23 @@ qint64 readZString(QIODevice &instream, QString &data, const char *encoding)
         {
             QByteArray qba;
             char c;
+            qint64 bytesRead = 0;
 
-            while (instream.read(&c, sizeof(char)))
+            while (instream.read(&c, sizeof(char)) > 0)
             {
                 if (c != '\0')
                     qba += c;
                 else
                     break;
+
+                bytesRead++;
             }
 
-            QTextCodec *codec = QTextCodec::codecForName(encoding);
+            if (codec == nullptr)
+                codec = QTextCodec::codecForName("UTF-8");
             data = QString(codec->toUnicode(qba));
 
-            return data.size() + 1;
+            return bytesRead;
         }
     }
     catch(...)
@@ -185,4 +194,4 @@ qint64 readUInt(QIODevice &instream, quint64 &data)
 }
 
 } // namespace io
-                } // namespace qkeeg
+} // namespace qkeeg

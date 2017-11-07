@@ -81,7 +81,8 @@ qint64 readPODType(QIODevice &instream, T &data)
 }
 
 template<typename T>
-qint64 readPrefixString(QIODevice &instream, QString &data, const char *encoding = "UTF-8",
+qint64 readPrefixString(QIODevice &instream, QString &data,
+                        QTextCodec *codec = QTextCodec::codecForName("UTF-8"),
                         const QSysInfo::Endian &endian = QSysInfo::Endian::ByteOrder,
                         const bool &isNullTerminated = false)
 {
@@ -103,7 +104,8 @@ qint64 readPrefixString(QIODevice &instream, QString &data, const char *encoding
                     qba.resize(size-1);
                 }
 
-                QTextCodec *codec = QTextCodec::codecForName(encoding);
+                if (codec == nullptr)
+                    codec = QTextCodec::codecForName("UTF-8");
                 data = QString(codec->toUnicode(qba));
 
                 return static_cast<qint64>(bytesRead + sizeof(T));
@@ -141,27 +143,26 @@ qint64 readBytes(QIODevice &instream, QByteArray &data, const quint32 &length,
 qint64 readBytes(QIODevice &instream, QByteArray &data, const quint32 &length);
 
 /// Read a string prefixed with a quint8 length. NOT zero terminated.
-qint64 readBString(QIODevice &instream, QString &data, const char *encoding = "UTF-8",
+qint64 readBString(QIODevice &instream, QString &data, QTextCodec *codec = QTextCodec::codecForName("UTF-8"),
                    const QSysInfo::Endian &endian = QSysInfo::Endian::ByteOrder);
+//qint64 readBString(QIODevice &instream, QString &data, const char *encoding = "UTF-8",
+//                   const QSysInfo::Endian &endian = QSysInfo::Endian::ByteOrder);
 
 /// Read a string prefixed with a quint8 length. zero terminated.
-qint64 readBZString(QIODevice &instream, QString &data, const char *encoding = "UTF-8",
-                    const QSysInfo::Endian &endian = QSysInfo::Endian::ByteOrder)
-{
-    return readPrefixString<quint8>(instream, data, encoding, endian, true);
-}
+qint64 readBZString(QIODevice &instream, QString &data, QTextCodec *codec = QTextCodec::codecForName("UTF-8"),
+                    const QSysInfo::Endian &endian = QSysInfo::Endian::ByteOrder);
 
 /// Read a string prefixed with a uint16 length. NOT zero terminated.
-qint64 readWString(QIODevice &instream, QString &data, const char *encoding = "UTF-8",
+qint64 readWString(QIODevice &instream, QString &data, QTextCodec *codec = QTextCodec::codecForName("UTF-8"),
                    const QSysInfo::Endian &endian = QSysInfo::Endian::ByteOrder);
 
 /// Read a string prefixed with a uint16 length. zero terminated.
-qint64 readWZString(QIODevice &instream, QString &data, const char *encoding = "UTF-8",
+qint64 readWZString(QIODevice &instream, QString &data, QTextCodec *codec = QTextCodec::codecForName("UTF-8"),
                    const QSysInfo::Endian &endian = QSysInfo::Endian::ByteOrder);
 
 /// Zero terminated string.
 /// Size is size of string text + 1 for string terminator.
-qint64 readZString(QIODevice &instream, QString &data, const char *encoding = "UTF-8");
+qint64 readZString(QIODevice &instream, QString &data, QTextCodec *codec = QTextCodec::codecForName("UTF-8"));
 
 } // namespace io
 } // namespace qkeeg
