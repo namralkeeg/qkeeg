@@ -31,13 +31,15 @@ OBJECTS_DIR = $${INTERMEDIATE}/.obj
 
 INCLUDEPATH += src
 
-SOURCES += #\
+SOURCES += \
+    src/io/binaryreaders.cpp
 
 HEADERS += \
     src/common/stringutils.hpp \
     src/common/macrohelpers.hpp \
     src/common/enums.hpp \
-    src/common/endian.hpp
+    src/common/endian.hpp \
+    src/io/binaryreaders.hpp
 
 unix {
     target.path = /usr/lib
