@@ -80,16 +80,23 @@ qint64 readBoolean(QIODevice &instream, bool &data, const QSysInfo::Endian &endi
     return -1;
 }
 
-qint64 readBytes(QIODevice &instream, QByteArray &data, const quint32 &length, const quint32 &index)
+qint64 readBytes(QIODevice &instream, QByteArray &data, const qint32 &length, const qint32 &index)
 {
     try
     {
+        if (length < 1 || index < 0)
+            return -1;
+
         if (instream.isReadable())
         {
             if (length + index > data.size())
                 data.resize(length + index);
 
             qint64 bytesRead = instream.read(data.data() + index, length);
+
+            if ((bytesRead < length) && (bytesRead != -1))
+                data.resize(bytesRead);
+
             return bytesRead;
         }
     }
@@ -102,7 +109,7 @@ qint64 readBytes(QIODevice &instream, QByteArray &data, const quint32 &length, c
     return -1;
 }
 
-qint64 readBytes(QIODevice &instream, QByteArray &data, const quint32 &length)
+qint64 readBytes(QIODevice &instream, QByteArray &data, const qint32 &length)
 {
     return readBytes(instream, data, length, 0);
 }

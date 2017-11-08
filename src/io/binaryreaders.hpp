@@ -136,11 +136,10 @@ qint64 readBoolean(QIODevice &instream, bool &data,
 
 /// Reads length bytes into data starting from index from the input stream.
 /// Data is resized if it's smaller than length.
-qint64 readBytes(QIODevice &instream, QByteArray &data, const quint32 &length,
-                 const quint32 &index);
+qint64 readBytes(QIODevice &instream, QByteArray &data, const qint32 &length, const qint32 &index);
 
 /// Reads length bytes into data from the input stream. Data is resized if it's smaller than length.
-qint64 readBytes(QIODevice &instream, QByteArray &data, const quint32 &length);
+qint64 readBytes(QIODevice &instream, QByteArray &data, const qint32 &length);
 
 /// Read a string prefixed with a quint8 length. NOT zero terminated.
 qint64 readBString(QIODevice &instream, QString &data, QTextCodec *codec = QTextCodec::codecForName("UTF-8"),
