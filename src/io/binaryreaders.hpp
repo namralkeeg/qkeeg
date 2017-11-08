@@ -145,8 +145,6 @@ qint64 readBytes(QIODevice &instream, QByteArray &data, const quint32 &length);
 /// Read a string prefixed with a quint8 length. NOT zero terminated.
 qint64 readBString(QIODevice &instream, QString &data, QTextCodec *codec = QTextCodec::codecForName("UTF-8"),
                    const QSysInfo::Endian &endian = QSysInfo::Endian::ByteOrder);
-//qint64 readBString(QIODevice &instream, QString &data, const char *encoding = "UTF-8",
-//                   const QSysInfo::Endian &endian = QSysInfo::Endian::ByteOrder);
 
 /// Read a string prefixed with a quint8 length. zero terminated.
 qint64 readBZString(QIODevice &instream, QString &data, QTextCodec *codec = QTextCodec::codecForName("UTF-8"),
