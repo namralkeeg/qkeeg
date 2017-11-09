@@ -23,10 +23,12 @@
 #define BINARYREADERS_HPP
 
 #include <common/endian.hpp>
+#include <cstddef>
 #include <QIODevice>
 #include <QDebug>
 #include <QString>
 #include <QTextCodec>
+#include <vector>
 
 namespace qkeeg { namespace io {
 
@@ -137,6 +139,7 @@ qint64 readBoolean(QIODevice &instream, bool &data,
 /// Reads length bytes into data starting from index from the input stream.
 /// Data is resized if it's smaller than length.
 qint64 readBytes(QIODevice &instream, QByteArray &data, const qint32 &length, const qint32 &index);
+qint64 readBytes(QIODevice &instream, std::vector<quint8> &data, const size_t &length, const size_t &index);
 
 /// Reads length bytes into data from the input stream. Data is resized if it's smaller than length.
 qint64 readBytes(QIODevice &instream, QByteArray &data, const qint32 &length);

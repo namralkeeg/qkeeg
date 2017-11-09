@@ -109,6 +109,35 @@ qint64 readBytes(QIODevice &instream, QByteArray &data, const qint32 &length, co
     return -1;
 }
 
+qint64 readBytes(QIODevice &instream, std::vector<quint8> &data, const size_t &length, const size_t &index)
+{
+    try
+    {
+        if (length == 0)
+            return 0;
+
+        if (instream.isReadable())
+        {
+            if (length + index > data.size())
+                data.resize(length + index);
+
+            qint64 bytesRead = instream.read(reinterpret_cast<char*>(&data[index]), length);
+
+            if ((bytesRead < length) && (bytesRead != -1))
+                data.resize(bytesRead);
+
+            return bytesRead;
+        }
+    }
+    catch(...)
+    {
+        //std::cerr << ex.what() << std::endl;
+        return -1;
+    }
+
+    return -1;
+}
+
 qint64 readBytes(QIODevice &instream, QByteArray &data, const qint32 &length)
 {
     return readBytes(instream, data, length, 0);
