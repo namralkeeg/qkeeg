@@ -71,7 +71,7 @@ qint64 readBoolean(QIODevice &instream, bool &data, const QSysInfo::Endian &endi
             return status;
         }
     }
-    catch(const std::exception &ex)
+    catch(...)
     {
         //qDebug() << ex.what() << std::endl;
         return -1;
@@ -94,7 +94,7 @@ qint64 readBytes(QIODevice &instream, QByteArray &data, const qint32 &length, co
 
             qint64 bytesRead = instream.read(data.data() + index, length);
 
-            if ((bytesRead < length) && (bytesRead != -1))
+            if ((bytesRead != -1) && (bytesRead < length))
                 data.resize(bytesRead);
 
             return bytesRead;
@@ -123,7 +123,7 @@ qint64 readBytes(QIODevice &instream, std::vector<quint8> &data, const size_t &l
 
             qint64 bytesRead = instream.read(reinterpret_cast<char*>(&data[index]), length);
 
-            if ((bytesRead < length) && (bytesRead != -1))
+            if ((bytesRead != -1) && (static_cast<size_t>(bytesRead) < length))
                 data.resize(bytesRead);
 
             return bytesRead;
