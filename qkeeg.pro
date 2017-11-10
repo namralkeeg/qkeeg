@@ -32,14 +32,16 @@ OBJECTS_DIR = $${INTERMEDIATE}/.obj
 INCLUDEPATH += src
 
 SOURCES += \
-    src/io/binaryreaders.cpp
+    src/io/binaryreaders.cpp \
+    src/io/binaryreader.cpp
 
 HEADERS += \
     src/common/stringutils.hpp \
     src/common/macrohelpers.hpp \
     src/common/enums.hpp \
     src/common/endian.hpp \
-    src/io/binaryreaders.hpp
+    src/io/binaryreaders.hpp \
+    src/io/binaryreader.hpp
 
 unix {
     target.path = /usr/lib
@@ -57,7 +59,7 @@ unix {
         # COMPILER FLAGS
 
         #  Optimization flags
-        QMAKE_CXXFLAGS_RELEASE -= /O2
+        #QMAKE_CXXFLAGS_RELEASE -= /O2
         QMAKE_CXXFLAGS_RELEASE *= /O2 /Ot /Ox /GL
         #  Multithreaded compiling for Visual Studio
         QMAKE_CXXFLAGS += -MP
