@@ -165,7 +165,8 @@ qint32 BinaryReader::read7BitEncodedInt()
     }
     while ((b & 0x80) != 0);
 
-    return convertToEndian(count, m_endian);
+    // Compressed int's are read in Little-Endian then converted to native.
+    return little_to_native(count);
 }
 
 bool BinaryReader::readBoolean()
