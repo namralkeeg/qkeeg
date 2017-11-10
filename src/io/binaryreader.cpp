@@ -20,6 +20,7 @@
  * IN THE SOFTWARE.
  */
 #include <io/binaryreader.hpp>
+#include <common/endian.hpp>
 
 namespace qkeeg { namespace io {
 
@@ -164,7 +165,7 @@ qint32 BinaryReader::read7BitEncodedInt()
     }
     while ((b & 0x80) != 0);
 
-    return count;
+    return convertToEndian(count, m_endian);
 }
 
 bool BinaryReader::readBoolean()
