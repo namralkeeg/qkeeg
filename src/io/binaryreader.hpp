@@ -25,8 +25,8 @@
 #include <QByteArray>
 #include <QObject>
 #include <QDataStream>
+#include <QMutex>
 #include <QTextCodec>
-#include <QTextStream>
 #include <QVector>
 
 namespace qkeeg { namespace io {
@@ -95,12 +95,19 @@ public:
     virtual quint32 readUInt32();
     virtual quint64 readUInt64();
 
+    virtual QString readBString();
+    virtual QString readBZString();
+    virtual QString readWString();
+    virtual QString readWZString();
+    virtual QString readZString();
+
 protected:
     const QByteArray m_defaultEncoding{"UTF-8"};
     QIODevice*       m_baseDevice;
     QTextCodec*      m_codec;
     QSysInfo::Endian m_endian;
     QDataStream      m_dataStream;
+    QMutex           m_writeMutex;
 };
 
 } // namespace io

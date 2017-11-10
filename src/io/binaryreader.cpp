@@ -76,6 +76,8 @@ void BinaryReader::setEndian(const QSysInfo::Endian &endian)
 
 qint32 BinaryReader::read(QByteArray &buffer, const qint32 &index, const qint32 &count)
 {
+    QMutexLocker lock(&m_writeMutex);
+
     try
     {
         if (index < 0 || count < 0)
@@ -111,6 +113,8 @@ qint32 BinaryReader::read(QByteArray &buffer, const qint32 &index, const qint32 
 
 qint32 BinaryReader::read(QVector<quint8> &buffer, const qint32 &index, const qint32 &count)
 {
+    QMutexLocker lock(&m_writeMutex);
+
     try
     {
         if (index < 0 || count < 0)
@@ -146,6 +150,8 @@ qint32 BinaryReader::read(QVector<quint8> &buffer, const qint32 &index, const qi
 
 qint32 BinaryReader::read7BitEncodedInt()
 {
+    QMutexLocker lock(&m_writeMutex);
+
     if (!m_baseDevice->isReadable())
             throw QString("Unable to read from device!");
 
@@ -171,6 +177,8 @@ qint32 BinaryReader::read7BitEncodedInt()
 
 bool BinaryReader::readBoolean()
 {
+    QMutexLocker lock(&m_writeMutex);
+
     if (!m_baseDevice->isReadable())
             throw QString("Unable to read from device!");
 
@@ -179,6 +187,8 @@ bool BinaryReader::readBoolean()
 
 quint8 BinaryReader::readByte()
 {
+    QMutexLocker lock(&m_writeMutex);
+
     if (!m_baseDevice->isReadable())
             throw QString("Unable to read from device!");
 
@@ -189,6 +199,8 @@ quint8 BinaryReader::readByte()
 
 QByteArray BinaryReader::readBytes(const qint32 &count)
 {
+    QMutexLocker lock(&m_writeMutex);
+
     if (!m_baseDevice->isReadable())
             throw QString("Unable to read from device!");
 
@@ -215,6 +227,8 @@ QByteArray BinaryReader::readBytes(const qint32 &count)
 
 double BinaryReader::readDouble()
 {
+    QMutexLocker lock(&m_writeMutex);
+
     if (!m_baseDevice->isReadable())
             throw QString("Unable to read from device!");
 
@@ -226,6 +240,8 @@ double BinaryReader::readDouble()
 
 float BinaryReader::readFloat()
 {
+    QMutexLocker lock(&m_writeMutex);
+
     if (!m_baseDevice->isReadable())
             throw QString("Unable to read from device!");
 
@@ -237,6 +253,8 @@ float BinaryReader::readFloat()
 
 qint16 BinaryReader::readInt16()
 {
+    QMutexLocker lock(&m_writeMutex);
+
     if (!m_baseDevice->isReadable())
             throw QString("Unable to read from device!");
 
@@ -247,6 +265,8 @@ qint16 BinaryReader::readInt16()
 
 qint32 BinaryReader::readInt32()
 {
+    QMutexLocker lock(&m_writeMutex);
+
     if (!m_baseDevice->isReadable())
             throw QString("Unable to read from device!");
 
@@ -257,6 +277,8 @@ qint32 BinaryReader::readInt32()
 
 qint64 BinaryReader::readInt64()
 {
+    QMutexLocker lock(&m_writeMutex);
+
     if (!m_baseDevice->isReadable())
             throw QString("Unable to read from device!");
 
@@ -267,6 +289,8 @@ qint64 BinaryReader::readInt64()
 
 qint8 BinaryReader::readSByte()
 {
+    QMutexLocker lock(&m_writeMutex);
+
     if (!m_baseDevice->isReadable())
             throw QString("Unable to read from device!");
 
@@ -282,6 +306,8 @@ float BinaryReader::readSingle()
 
 QString BinaryReader::readString()
 {
+    QMutexLocker lock(&m_writeMutex);
+
     if (!m_baseDevice->isReadable())
             throw QString("Unable to read from device!");
 
@@ -317,6 +343,8 @@ QString BinaryReader::readString()
 
 quint16 BinaryReader::readUInt16()
 {
+    QMutexLocker lock(&m_writeMutex);
+
     if (!m_baseDevice->isReadable())
             throw QString("Unable to read from device!");
 
@@ -327,6 +355,8 @@ quint16 BinaryReader::readUInt16()
 
 quint32 BinaryReader::readUInt32()
 {
+    QMutexLocker lock(&m_writeMutex);
+
     if (!m_baseDevice->isReadable())
             throw QString("Unable to read from device!");
 
@@ -337,12 +367,99 @@ quint32 BinaryReader::readUInt32()
 
 quint64 BinaryReader::readUInt64()
 {
+    QMutexLocker lock(&m_writeMutex);
+
     if (!m_baseDevice->isReadable())
             throw QString("Unable to read from device!");
 
     quint64 buffer;
     m_dataStream >> buffer;
     return buffer;
+}
+
+QString BinaryReader::readBString()
+{
+    QMutexLocker lock(&m_writeMutex);
+
+    if (!m_baseDevice->isReadable())
+            throw QString("Unable to read from device!");
+
+    quint8 size = readByte();
+    QByteArray qba = readBytes(size);
+
+    // Return the string converted to unicode.
+    return QString(m_codec->toUnicode(qba));
+}
+
+QString BinaryReader::readBZString()
+{
+    QMutexLocker lock(&m_writeMutex);
+
+    if (!m_baseDevice->isReadable())
+            throw QString("Unable to read from device!");
+
+    quint8 size = readByte();
+    QByteArray qba = readBytes(size);
+    // Remove the terminating null char.
+    qba.resize(size-1);
+
+    // Return the string converted to unicode.
+    return QString(m_codec->toUnicode(qba));
+}
+
+QString BinaryReader::readWString()
+{
+    QMutexLocker lock(&m_writeMutex);
+
+    if (!m_baseDevice->isReadable())
+            throw QString("Unable to read from device!");
+
+    quint16 size = readUInt16();
+    QByteArray qba = readBytes(size);
+
+    // Return the string converted to unicode.
+    return QString(m_codec->toUnicode(qba));
+}
+
+QString BinaryReader::readWZString()
+{
+    QMutexLocker lock(&m_writeMutex);
+
+    if (!m_baseDevice->isReadable())
+            throw QString("Unable to read from device!");
+
+    quint16 size = readUInt16();
+    QByteArray qba = readBytes(size);
+    // Remove the terminating null char.
+    qba.resize(size-1);
+
+    // Return the string converted to unicode.
+    return QString(m_codec->toUnicode(qba));
+}
+
+QString BinaryReader::readZString()
+{
+    QMutexLocker lock(&m_writeMutex);
+
+    if (!m_baseDevice->isReadable())
+            throw QString("Unable to read from device!");
+
+    QByteArray qba;
+    char c;
+    qint64 bytesRead = 0;
+
+    while (m_dataStream.readRawData(&c, sizeof(char)) > 0)
+    {
+        if (c != '\0')
+            qba += c;
+        else
+            break;
+
+        bytesRead++;
+    }
+
+    // Return the string converted to unicode.
+    return QString(m_codec->toUnicode(qba));
 }
 
 } // namespace io
