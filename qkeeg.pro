@@ -33,7 +33,8 @@ INCLUDEPATH += src
 
 SOURCES += \
     src/io/binaryreaders.cpp \
-    src/io/binaryreader.cpp
+    src/io/binaryreader.cpp \
+    src/io/binarywriter.cpp
 
 HEADERS += \
     src/common/stringutils.hpp \
@@ -41,7 +42,8 @@ HEADERS += \
     src/common/enums.hpp \
     src/common/endian.hpp \
     src/io/binaryreaders.hpp \
-    src/io/binaryreader.hpp
+    src/io/binaryreader.hpp \
+    src/io/binarywriter.hpp
 
 unix {
     target.path = /usr/lib
