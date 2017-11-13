@@ -66,6 +66,7 @@ QSysInfo::Endian BinaryReader::byteOrder() const
 void BinaryReader::setByteOrder(const QSysInfo::Endian &byteOrder)
 {
     m_byteOrder = byteOrder;
+    m_doswap = (QSysInfo::ByteOrder != m_byteOrder) ? true : false;
 }
 
 qint32 BinaryReader::read(QByteArray &buffer, const qint32 &index, const qint32 &count)
