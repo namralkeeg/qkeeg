@@ -31,18 +31,23 @@
 
 namespace qkeeg { namespace io {
 
-#ifndef QDATASTREAM_DEFAULT_VERSION
-    #define QDATASTREAM_DEFAULT_VERSION QDataStream::Qt_5_9
-#endif
-
 class BinaryReader : public QObject
 {
     Q_OBJECT
 
 public:
+
+    /// Enum Defs
+    enum Status
+    {
+        Ok,
+        ReadPastEnd,
+        ReadCorruptData,
+    };
+
     /// Constructors
-    BinaryReader(QIODevice &readDevice, const QSysInfo::Endian &endian = QSysInfo::ByteOrder);
-    BinaryReader(QIODevice &readDevice, QTextCodec *codec, const QSysInfo::Endian &endian = QSysInfo::ByteOrder);
+    BinaryReader(QIODevice &readDevice, const QSysInfo::Endian &byteOrder = QSysInfo::ByteOrder);
+    BinaryReader(QIODevice &readDevice, QTextCodec *codec, const QSysInfo::Endian &byteOrder = QSysInfo::ByteOrder);
 
     /// Getters and Setters
     QTextCodec *codec() const;
@@ -51,8 +56,8 @@ public:
     QIODevice *baseDevice();
     void setBaseDevice(QIODevice *baseDevice);
 
-    QSysInfo::Endian endian() const;
-    void setEndian(const QSysInfo::Endian &endian);
+    QSysInfo::Endian byteOrder() const;
+    void setByteOrder(const QSysInfo::Endian &byteOrder);
 
     /// Read functions
 
@@ -105,9 +110,12 @@ protected:
     const QByteArray m_defaultEncoding{"UTF-8"};
     QIODevice*       m_baseDevice;
     QTextCodec*      m_codec;
-    QSysInfo::Endian m_endian;
-    QDataStream      m_dataStream;
+    QSysInfo::Endian m_byteOrder;
     QMutex           m_writeMutex;
+    bool             m_doswap;
+    Status           m_status;
+
+    qint64 readBlock(void* buffer, const qint64 &index, const qint64 &count);
 };
 
 } // namespace io
