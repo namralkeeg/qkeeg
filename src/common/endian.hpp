@@ -28,6 +28,16 @@
 
 namespace qkeeg {
 
+static inline quint8 swap(quint8 x)
+{
+    return x;
+}
+
+static inline qint8 swap(qint8 x)
+{
+    return x;
+}
+
 static inline quint16 swap(quint16 x)
 {
 #if defined(_MSC_VER)
@@ -37,6 +47,11 @@ static inline quint16 swap(quint16 x)
 #else
     return (x >> 8) | (x << 8);
 #endif
+}
+
+static inline qint16 swap(qint16 x)
+{
+    return static_cast<qint16>(swap(static_cast<quint16>(x)));
 }
 
 static inline quint32 swap(quint32 x)
@@ -54,6 +69,11 @@ static inline quint32 swap(quint32 x)
 #endif
 }
 
+static inline qint32 swap(qint32 x)
+{
+    return static_cast<qint32>(swap(static_cast<quint32>(x)));
+}
+
 static inline quint64 swap(quint64 x)
 {
 #if defined(_MSC_VER)
@@ -65,6 +85,11 @@ static inline quint64 swap(quint64 x)
             ((x & 0x0000FFFF0000FFFF) << 16 | (x & 0xFFFF0000FFFF0000) >> 16) |
             ((x & 0x00FF00FF00FF00FF) << 8  | (x & 0xFF00FF00FF00FF00) >> 8);
 #endif
+}
+
+static inline qint64 swap(qint64 x)
+{
+    return static_cast<qint64>(swap(static_cast<quint64>(x)));
 }
 
 /// rotate left and wrap around to the right
