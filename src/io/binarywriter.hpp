@@ -41,9 +41,16 @@ class BinaryWriter : public QObject
     Q_OBJECT
 
 public:
+
+    enum Status
+    {
+        Ok,
+        WriteFailed,
+    };
+
     /// Constructors
-    BinaryWriter(QIODevice &writeDevice, const QSysInfo::Endian &endian = QSysInfo::ByteOrder);
-    BinaryWriter(QIODevice &writeDevice, QTextCodec *codec, const QSysInfo::Endian &endian = QSysInfo::ByteOrder);
+    BinaryWriter(QIODevice &writeDevice, const QSysInfo::Endian &byteOrder = QSysInfo::ByteOrder);
+    BinaryWriter(QIODevice &writeDevice, QTextCodec *codec, const QSysInfo::Endian &byteOrder = QSysInfo::ByteOrder);
 
     /// Getters and Setters
     QIODevice *baseDevice();
@@ -57,43 +64,47 @@ public:
 
     /// Write functions
 
-    virtual void write(const bool &value);
-    virtual void write(const double &value);
-    virtual void write(const float &value);
+    virtual qint32 write(const bool &value);
+    virtual qint32 write(const double &value);
+    virtual qint32 write(const float &value);
 
-    virtual void write(const QByteArray &value, const qint32 &index, const qint32 &count);
-    virtual void write(const QByteArray &value);
-    virtual void write(const QVector<quint8> &value, const qint32 &index, const qint32 &count);
-    virtual void write(const QVector<quint8> &value);
+    virtual qint32 write(const QByteArray &value, const qint32 &index, const qint32 &count);
+    virtual qint32 write(const QByteArray &value);
+    virtual qint32 write(const QVector<quint8> &value, const qint32 &index, const qint32 &count);
+    virtual qint32 write(const QVector<quint8> &value);
 
-    virtual void write(const qint8 &value);
-    virtual void write(const qint16 &value);
-    virtual void write(const qint32 &value);
-    virtual void write(const qint64 &value);
+    virtual qint32 write(const qint8 &value);
+    virtual qint32 write(const qint16 &value);
+    virtual qint32 write(const qint32 &value);
+    virtual qint32 write(const qint64 &value);
 
-    virtual void write(const QString &value);
+    virtual qint32 write(const QString &value);
 
-    virtual void write(const quint8 &value);
-    virtual void write(const quint16 &value);
-    virtual void write(const quint32 &value);
-    virtual void write(const quint64 &value);
+    virtual qint32 write(const quint8 &value);
+    virtual qint32 write(const quint16 &value);
+    virtual qint32 write(const quint32 &value);
+    virtual qint32 write(const quint64 &value);
 
     /// Writes out a 32-bit integer in compressed format.
-    virtual void write7BitEncodedInt(const qint32 &value);
+    virtual qint32 write7BitEncodedInt(const qint32 &value);
 
-    virtual void writeBString(const QString &value);
-    virtual void writeBZString(const QString &value);
-    virtual void writeWString(const QString &value);
-    virtual void writeWZString(const QString &value);
-    virtual void writeZString(const QString &value);
+    virtual qint32 writeBString(const QString &value);
+    virtual qint32 writeBZString(const QString &value);
+    virtual qint32 writeWString(const QString &value);
+    virtual qint32 writeWZString(const QString &value);
+    virtual qint32 writeZString(const QString &value);
 
 protected:
     const QByteArray m_defaultEncoding{"UTF-8"};
     QIODevice*       m_baseDevice;
     QTextCodec*      m_codec;
-    QSysInfo::Endian m_endian;
-    QDataStream      m_dataStream;
+    QSysInfo::Endian m_byteOrder;
+    //QDataStream      m_dataStream;
     QMutex           m_writeMutex;
+    bool             m_doswap;
+    Status           m_status;
+
+    qint64 writeBlock(const void *buffer, const qint64 &index, const qint64 &count);
 };
 
 } // namespace io
