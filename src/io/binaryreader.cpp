@@ -35,6 +35,8 @@ BinaryReader::BinaryReader(QIODevice &readDevice, QTextCodec *codec, const QSysI
     m_baseDevice(&readDevice), m_codec(codec), m_byteOrder(byteOrder)
 {
     m_doswap = (QSysInfo::ByteOrder != m_byteOrder) ? true : false;
+    if (m_codec == nullptr)
+        m_codec = QTextCodec::codecForName(m_defaultEncoding);
 }
 
 QTextCodec *BinaryReader::codec() const
