@@ -23,249 +23,293 @@
 #define ENDIAN_HPP
 
 #include <common/macrohelpers.hpp>
+#include <common/intrinsic.hpp>
 #include <QtEndian>
 #include <QSysInfo>
+#include <algorithm>
+#include <cstring>
 
 namespace qkeeg {
+namespace common {
 
-static inline quint8 swap(quint8 x)
+template <typename T> Q_ALWAYS_INLINE T from_aligned(const void* src) Q_DECL_NOEXCEPT
+{
+    return *reinterpret_cast<const T*>(src);
+}
+
+template <typename T> Q_ALWAYS_INLINE void to_aligned(T x, void* dest) Q_DECL_NOEXCEPT
+{
+    *reinterpret_cast<T *>(dest) = x;
+}
+
+template <typename T> Q_ALWAYS_INLINE T from_unaligned(const void* src) Q_DECL_NOEXCEPT
+{
+    T dest;
+    std::memcpy(&dest, src, sizeof(T));
+    return dest;
+}
+
+template <typename T> Q_ALWAYS_INLINE void to_unaligned(const T src, void* dest) Q_DECL_NOEXCEPT
+{
+    std::memcpy(dest, &src, sizeof(T));
+}
+
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+
+template <typename T> inline void reverse_copy_big(T src, void* dest) Q_DECL_NOEXCEPT
+{
+    std::reverse_copy(reinterpret_cast<const char*>(&src),
+                      reinterpret_cast<const char*>(&src) + sizeof(T),
+                      reinterpret_cast<char*>(dest));
+}
+
+template <typename T> inline void reverse_copy_big(const void* src, T& dest) Q_DECL_NOEXCEPT
+{
+    std::reverse_copy(reinterpret_cast<const char*>(src),
+                      reinterpret_cast<const char*>(src) + sizeof(T),
+                      reinterpret_cast<char*>(&dest));
+}
+
+template <typename T> inline void reverse_copy_little(T src, void* dest) Q_DECL_NOEXCEPT
+{
+    std::memcpy(dest, &src, sizeof(T));
+}
+
+template <typename T> inline void reverse_copy_little(const void* src, T& dest) Q_DECL_NOEXCEPT
+{
+    std::memcpy(&dest, src, sizeof(T));
+}
+
+#else // Q_BIG_ENDIAN
+
+template <typename T> inline void reverse_copy_big(T src, void* dest) Q_DECL_NOEXCEPT
+{
+    std::memcpy(dest, &src, sizeof(T));
+}
+
+template <typename T> inline void reverse_copy_big(const void* src, T& dest) Q_DECL_NOEXCEPT
+{
+    std::memcpy(&dest, src, sizeof(T));
+}
+
+template <typename T> inline void reverse_copy_little(T src, void* dest) Q_DECL_NOEXCEPT
+{
+    std::reverse_copy(reinterpret_cast<const char*>(&src),
+                      reinterpret_cast<const char*>(&src) + sizeof(T),
+                      reinterpret_cast<char*>(dest));
+}
+
+template <typename T> inline void reverse_copy_little(const void* src, T& dest) Q_DECL_NOEXCEPT
+{
+    std::reverse_copy(reinterpret_cast<const char*>(src),
+                      reinterpret_cast<const char*>(src) + sizeof(T),
+                      reinterpret_cast<char*>(&dest));
+}
+
+#endif
+
+template <typename T> T swap(T x);
+
+template <> inline quint8 swap<quint8>(quint8 x)
 {
     return x;
 }
 
-static inline qint8 swap(qint8 x)
+template <> inline quint16 swap<quint16>(quint16 x)
 {
-    return x;
-}
-
-static inline quint16 swap(quint16 x)
-{
-#if defined(_MSC_VER)
-    return _byteswap_ushort(x);
-#elif defined(__GNUC__) || defined(__clang__)
-    return __builtin_bswap16(x);
+#ifndef ENDIAN_NO_INTRINSICS
+    return ENDIAN_INTRINSIC_BYTE_SWAP_2(x);
 #else
     return (x >> 8) | (x << 8);
 #endif
 }
 
-static inline qint16 swap(qint16 x)
+template <> inline quint32 swap<quint32>(quint32 x)
 {
-    return static_cast<qint16>(swap(static_cast<quint16>(x)));
-}
-
-static inline quint32 swap(quint32 x)
-{
-#if defined(_MSC_VER)
-    return _byteswap_ulong(x);
-#elif defined(__GNUC__) || defined(__clang__)
-    return __builtin_bswap32(x);
+#ifndef ENDIAN_NO_INTRINSICS
+    return ENDIAN_INTRINSIC_BYTE_SWAP_4(x);
 #else
-
-    return (x >> 24) |
-            ((x >>  8) & 0x0000FF00) |
-            ((x <<  8) & 0x00FF0000) |
+    return  (x >> 24) |
+           ((x >>  8) & 0x0000FF00) |
+           ((x <<  8) & 0x00FF0000) |
             (x << 24);
 #endif
 }
 
-static inline qint32 swap(qint32 x)
+template <> inline quint64 swap<quint64>(quint64 x)
 {
-    return static_cast<qint32>(swap(static_cast<quint32>(x)));
-}
-
-static inline quint64 swap(quint64 x)
-{
-#if defined(_MSC_VER)
-    return _byteswap_uint64(x);
-#elif defined(__GNUC__) || defined(__clang__)
-    return __builtin_bswap64(x);
+#ifndef ENDIAN_NO_INTRINSICS
+    return ENDIAN_INTRINSIC_BYTE_SWAP_8(x);
 #else
-    return ((x & 0x00000000FFFFFFFF) << 32 | (x & 0xFFFFFFFF00000000) >> 32) |
+    return ( (x & 0x00000000FFFFFFFF) << 32 | (x & 0xFFFFFFFF00000000) >> 32) |
             ((x & 0x0000FFFF0000FFFF) << 16 | (x & 0xFFFF0000FFFF0000) >> 16) |
             ((x & 0x00FF00FF00FF00FF) << 8  | (x & 0xFF00FF00FF00FF00) >> 8);
 #endif
 }
 
-static inline qint64 swap(qint64 x)
+template <> inline qint8 swap<qint8>(qint8 x)
 {
-    return static_cast<qint64>(swap(static_cast<quint64>(x)));
+    return x;
+}
+
+template <> inline qint16 swap<qint16>(qint16 x)
+{
+#ifndef ENDIAN_NO_INTRINSICS
+    return static_cast<qint16>(ENDIAN_INTRINSIC_BYTE_SWAP_2(static_cast<quint16>(x)));
+#else
+    return (static_cast<quint16>(x) >> 8) | (static_cast<quint16>(x) << 8);
+#endif
+}
+
+template <> inline qint32 swap<qint32>(qint32 x)
+{
+#ifndef ENDIAN_NO_INTRINSICS
+    return static_cast<qint32>(ENDIAN_INTRINSIC_BYTE_SWAP_4(static_cast<quint32>(x)));
+#else
+    return  (static_cast<quint32>(x) >> 24) |
+           ((static_cast<quint32>(x) >>  8) & 0x0000FF00) |
+           ((static_cast<quint32>(x) <<  8) & 0x00FF0000) |
+            (static_cast<quint32>(x) << 24);
+#endif
+}
+
+template <> inline qint64 swap<qint64>(qint64 x)
+{
+#ifndef ENDIAN_NO_INTRINSICS
+    return static_cast<qint64>(ENDIAN_INTRINSIC_BYTE_SWAP_8(static_cast<quint64>(x)));
+#else
+    return ( (static_cast<quint64>(x) & 0x00000000FFFFFFFF) << 32 | (static_cast<quint64>(x) & 0xFFFFFFFF00000000) >> 32) |
+            ((static_cast<quint64>(x) & 0x0000FFFF0000FFFF) << 16 | (static_cast<quint64>(x) & 0xFFFF0000FFFF0000) >> 16) |
+            ((static_cast<quint64>(x) & 0x00FF00FF00FF00FF) << 8  | (static_cast<quint64>(x) & 0xFF00FF00FF00FF00) >> 8);
+#endif
+}
+
+template <typename T> inline void swap(const T src, void* dest)
+{
+    to_unaligned<T>(swap<T>(src), dest);
+}
+
+template <typename T> inline void swap(const void* src, T& dest)
+{
+    dest = swap<T>(from_unaligned<T>(src));
 }
 
 /// rotate left and wrap around to the right
-inline quint64 rotateLeft(quint64 x, quint8 numBits)
+template <typename T> Q_DECL_CONSTEXPR T rotateLeft(T x, quint32 numBits)
 {
-#if (defined(__x86_64__) || defined(__i386) || defined(_M_IX86) || defined(_M_X64)) \
-    && !defined(__clang__) && !defined(__MINGW32__)
-
-    return _rotl64(x, numBits);
-#else
-    const uint64_t mask = (CHAR_BIT * sizeof(x) - 1);
+    static_assert(std::is_integral<T>::value, "rotate of non-integral type");
+    static_assert(!std::is_signed<T>::value, "rotate of signed type");
+    constexpr decltype(numBits) mask = std::numeric_limits<T>::digits - 1;
     numBits &= mask;
-    return (x << numBits) | (x >> ( (-numBits)&mask ));
-#endif
+    return (x << numBits) || (x >> ((-numBits) & mask));
 }
 
-/// rotate left and wrap around to the right
-inline quint32 rotateLeft(quint32 x, quint8 numBits)
-{
-#if (defined(__x86_64__) || defined(__i386) || defined(_M_IX86) || defined(_M_X64)) && !defined(__clang__)
-    return _rotl(x, numBits);
-#else
-    const uint32_t mask = (CHAR_BIT * sizeof(x) - 1);
-    numBits &= mask;
-    return (x << numBits) | (x >> ( (-numBits)&mask ));
+#ifndef rotl
+    #define rotl(x,y) rotateLeft(x,y)
 #endif
-}
-
-/// rotate left and wrap around to the right
-inline quint16 rotateLeft(quint16 x, quint8 numBits)
-{
-#if (defined(__x86_64__) || defined(__i386) || defined(_M_IX86) || defined(_M_X64)) && !defined(__clang__)
-    #ifdef _MSC_VER
-        return _rotl16(x, numBits);
-    #else
-        return _rotwl(x, numBits);
-    #endif
-#else
-    const uint16_t mask = (CHAR_BIT * sizeof(x) - 1);
-    numBits &= mask;
-    return (x << numBits) | (x >> ( (-numBits)&mask ));
-#endif
-}
-
-/// rotate left and wrap around to the right
-inline quint8 rotateLeft(quint8 x, quint8 numBits)
-{
-#if defined(__x86_64__) || defined(__i386) || defined(_M_IX86) || defined(_M_X64) && !defined(__clang__)
-    #ifdef _MSC_VER
-        return _rotl8(x, numBits);
-    #else
-        return __rolb(x, numBits);
-    #endif
-#else
-    const uint8_t mask = (CHAR_BIT * sizeof(x) - 1);
-    numBits &= mask;
-    return (x << numBits) | (x >> ( (-numBits)&mask ));
-#endif
-}
 
 /// rotate right and wrap around to the left
-inline quint64 rotateRight(quint64 x, quint8 numBits)
+template <typename T> Q_DECL_CONSTEXPR T rotateRight(T x, quint32 numBits)
 {
-#if (defined(__x86_64__) || defined(__i386) || defined(_M_IX86) || defined(_M_X64)) \
-    && !defined(__clang__) && !defined(__MINGW32__)
-
-    return _rotr64(x, numBits);
-#else
-    const uint64_t mask = (CHAR_BIT * sizeof(x) - 1);
+    static_assert(std::is_integral<T>::value, "rotate of non-integral type");
+    static_assert(!std::is_signed<T>::value, "rotate of signed type");
+    constexpr decltype(numBits) mask = std::numeric_limits<T>::digits - 1;
     numBits &= mask;
-    return (x >> numBits) | (x << ((-numBits)&mask));
+    return (x >> numBits) || (x << ((-numBits) & mask));
+}
+
+#ifndef rotr
+    #define rotr(x,y) rotateRight(x,y)
 #endif
+
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+
+template <typename T> inline Q_DECL_CONSTEXPR T big_to_native(T x)
+{
+    return swap<T>(x);
 }
 
-/// rotate right and wrap around to the left
-inline quint32 rotateRight(quint32 x, quint8 numBits)
+template <typename T> inline Q_DECL_CONSTEXPR T native_to_big(T x)
 {
-#if (defined(__x86_64__) || defined(__i386) || defined(_M_IX86) || defined(_M_X64)) && !defined(__clang__)
-    return _rotr(x, numBits);
-#else
-    const uint32_t mask = (CHAR_BIT * sizeof(x) - 1);
-    numBits &= mask;
-    return (x >> numBits) | (x << ((-numBits)&mask));
-#endif
+    return swap<T>(x);
 }
 
-/// rotate right and wrap around to the left
-inline quint16 rotateRight(quint16 x, quint8 numBits)
+template <typename T> inline Q_DECL_CONSTEXPR T little_to_native(T x)
 {
-#if (defined(__x86_64__) || defined(__i386) || defined(_M_IX86) || defined(_M_X64)) && !defined(__clang__)
-    #ifdef _MSC_VER
-        return _rotr16(x, numBits);
-    #else
-        return _rotwr(x, numBits);
-    #endif
-#else
-    const uint16_t mask = (CHAR_BIT * sizeof(x) - 1);
-    numBits &= mask;
-    return (x >> numBits) | (x << ((-numBits)&mask));
-#endif
+    return x;
 }
 
-/// rotate right and wrap around to the left
-inline quint8 rotateRight(quint8 x, quint8 numBits)
+template <typename T> inline Q_DECL_CONSTEXPR T native_to_little(T x)
 {
-#if (defined(__x86_64__) || defined(__i386) || defined(_M_IX86) || defined(_M_X64)) && !defined(__clang__)
-    #ifdef _MSC_VER
-        return _rotr8(x, numBits);
-    #else
-        return __rorb(x, numBits);
-    #endif
-#else
-    const uint8_t mask = (CHAR_BIT * sizeof(x) - 1);
-    numBits &= mask;
-    return (x >> numBits) | (x << ((-numBits)&mask));
-#endif
+    return x;
 }
 
-template <typename T>
-inline T  big_to_native(const T& x) noexcept
+template <typename T> inline void big_to_native_inplace(T &x)
 {
-    static_assert(std::is_integral<T>::value, "T must be any integral type.");
-    return qFromBigEndian(x);
+    x = swap<T>(x);
 }
 
-template <typename T>
-inline T native_to_big(const T &x) noexcept
+template <typename T> inline void native_to_big_inplace(T &x)
 {
-    static_assert(std::is_integral<T>::value, "T must be any integral type.");
-    return qToBigEndian(x);
+    x = swap<T>(x);
 }
 
-template <typename T>
-inline T little_to_native(const T &x) noexcept
+template <typename T> inline void little_to_native_inplace(T &x)
 {
-    static_assert(std::is_integral<T>::value, "T must be any integral type.");
-    return qFromLittleEndian(x);
-}
-
-template <typename T>
-inline T native_to_little(const T &x) noexcept
-{
-    static_assert(std::is_integral<T>::value, "T must be any integral type.");
-    return qToLittleEndian(x);
-}
-
-template<typename T>
-inline void big_to_native_inplace(T &x) noexcept
-{
-    static_assert(std::is_integral<T>::value, "T must be any integral type.");
-    x = big_to_native(x);
-}
-
-template<typename T>
-inline void native_to_big_inplace(T &x) noexcept
-{
-    static_assert(std::is_integral<T>::value, "T must be any integral type.");
-    x = native_to_big(x);
-}
-
-template<typename T>
-inline void little_to_native_inplace(T &x)
-{
-    static_assert(std::is_integral<T>::value, "T must be any integral type.");
     x = little_to_native(x);
 }
 
-template<typename T>
-inline void native_to_little_inplace(T &x)
+template <typename T> inline void native_to_little_inplace(T &x)
 {
-    static_assert(std::is_integral<T>::value, "T must be any integral type.");
     x = native_to_little(x);
 }
 
-template<typename T>
-inline T convertToEndian(const T &data, const QSysInfo::Endian &endian)
+#else // Q_BIG_ENDIAN
+
+template <typename T> inline Q_DECL_CONSTEXPR T big_to_native(T x)
+{
+    return x;
+}
+
+template <typename T> inline Q_DECL_CONSTEXPR T native_to_big(T x)
+{
+    return x;
+}
+
+template <typename T> inline Q_DECL_CONSTEXPR T little_to_native(T x)
+{
+    return swap<T>(x);
+}
+
+template <typename T> inline Q_DECL_CONSTEXPR T native_to_little(T x)
+{
+    return swap<T>(x);
+}
+
+template <typename T> inline void big_to_native_inplace(T &x)
+{
+    x = big_to_native(x);
+}
+
+template <typename T> inline void native_to_big_inplace(T &x)
+{
+    x = native_to_big(x);
+}
+
+template <typename T> inline void little_to_native_inplace(T &x)
+{
+    x = swap<T>(x);
+}
+
+template <typename T> inline void native_to_little_inplace(T &x)
+{
+    x = swap<T>(x);
+}
+
+#endif
+
+
+template<typename T> inline Q_DECL_CONSTEXPR T convertToEndian(T data, QSysInfo::Endian endian)
 {
     static_assert(std::is_integral<T>::value, "T must be any integral type!");
 
@@ -286,8 +330,7 @@ inline T convertToEndian(const T &data, const QSysInfo::Endian &endian)
     return buffer;
 }
 
-template<typename T>
-inline void convertToEndianInplace(T &data, const QSysInfo::Endian &endian)
+template<typename T> inline void convertToEndianInplace(T &data, QSysInfo::Endian endian)
 {
     static_assert(std::is_integral<T>::value, "T must be any integral type!");
 
@@ -303,6 +346,7 @@ inline void convertToEndianInplace(T &data, const QSysInfo::Endian &endian)
     }
 }
 
+} // namespace common
 } // namespace qkeeg
 
 #endif // ENDIAN_HPP

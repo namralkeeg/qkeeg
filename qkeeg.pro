@@ -32,7 +32,6 @@ OBJECTS_DIR = $${INTERMEDIATE}/.obj
 INCLUDEPATH += src
 
 SOURCES += \
-    src/io/binaryreaders.cpp \
     src/io/binaryreader.cpp \
     src/io/binarywriter.cpp
 
@@ -41,7 +40,7 @@ HEADERS += \
     src/common/macrohelpers.hpp \
     src/common/enums.hpp \
     src/common/endian.hpp \
-    src/io/binaryreaders.hpp \
+    src/common/intrinsic.hpp \
     src/io/binaryreader.hpp \
     src/io/binarywriter.hpp
 

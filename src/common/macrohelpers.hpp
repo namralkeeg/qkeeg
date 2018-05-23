@@ -35,7 +35,7 @@
     #include <intrin.h>
     #if defined(__MINGW32__) || defined(__MINGW64__)
         // includes intrinsic cpu instructions.
-        #include <x86intrin.h>
+        #include <immintrin.h>
         #define PREFETCH(location) __builtin_prefetch(location)
     #else
         #define PREFETCH(location) _mm_prefetch(location, _MM_HINT_T0)
