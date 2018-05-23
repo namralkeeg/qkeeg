@@ -250,29 +250,6 @@ double BinaryReader::readDouble()
     std::memcpy(&value, &temp, sizeof(temp));
 
     return value;
-
-//    double buffer = 0.0;
-
-//    if (readBlock(&buffer, 0, sizeof(buffer)) != sizeof(buffer))
-//    {
-//        buffer = 0.0;
-//    }
-//    else
-//    {
-//        if (m_doswap)
-//        {
-//            union
-//            {
-//                double val1;
-//                quint64 val2;
-//            } x;
-
-//            x.val2 = common::swap<quint64>(*reinterpret_cast<quint64 *>(&buffer));
-//            buffer = x.val1;
-//        }
-//    }
-
-//    return buffer;
 }
 
 float BinaryReader::readFloat()
@@ -298,28 +275,6 @@ float BinaryReader::readFloat()
     std::memcpy(&value, &temp, sizeof(temp));
 
     return value;
-//    float buffer = 0.0;
-
-//    if (readBlock(&buffer, 0, sizeof(buffer)) != sizeof(buffer))
-//    {
-//        buffer = 0.0;
-//    }
-//    else
-//    {
-//        if (m_doswap)
-//        {
-//            union
-//            {
-//                float val1;
-//                quint32 val2;
-//            } x;
-
-//            x.val2 = common::swap<quint32>(*reinterpret_cast<quint32 *>(&buffer));
-//            buffer = x.val1;
-//        }
-//    }
-
-//    return buffer;
 }
 
 qint16 BinaryReader::readInt16()
