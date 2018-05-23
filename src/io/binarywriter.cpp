@@ -21,6 +21,7 @@
  */
 #include <io/binarywriter.hpp>
 #include <common/endian.hpp>
+#include <array>
 
 namespace qkeeg { namespace io {
 
@@ -35,8 +36,9 @@ BinaryWriter::BinaryWriter(QIODevice &writeDevice, QTextCodec *codec, const QSys
     m_baseDevice(&writeDevice), m_codec(codec), m_byteOrder(byteOrder)
 {
     m_doswap = (QSysInfo::ByteOrder != m_byteOrder) ? true : false;
-    if (m_codec == nullptr)
+    if (m_codec == nullptr) {
         m_codec = QTextCodec::codecForName(m_defaultEncoding);
+    }
 }
 
 QIODevice *BinaryWriter::baseDevice()
@@ -56,8 +58,7 @@ QTextCodec *BinaryWriter::codec() const
 
 void BinaryWriter::setCodec(QTextCodec *codec)
 {
-    if (codec != nullptr)
-    {
+    if (codec != nullptr) {
         m_codec = codec;
     }
 }
@@ -73,114 +74,169 @@ void BinaryWriter::setEndian(const QSysInfo::Endian &endian)
     m_doswap = (QSysInfo::ByteOrder != m_byteOrder) ? true : false;
 }
 
-qint32 BinaryWriter::write(const bool &value)
+BinaryWriter::Status BinaryWriter::status() const
+{
+    return m_status;
+}
+
+qint64 BinaryWriter::write(bool value)
 {
     quint8 buffer = (value) ? 1 : 0;
     return write(buffer);
 }
 
-qint32 BinaryWriter::write(const double &value)
+qint64 BinaryWriter::write(double value)
 {
-    qint32 bytesWritten = -1;
+    std::array<quint8, sizeof(value)> buffer;
+    quint64 temp;
+    std::memcpy(&temp, &value, sizeof(value));
 
-    if (m_doswap)
+    if (m_byteOrder == QSysInfo::Endian::LittleEndian)
     {
-        union
-        {
-            double val1;
-            quint64 val2;
-        } x;
-
-        x.val1 = value;
-        x.val2 = swap(x.val2);
-
-        bytesWritten = writeBlock(&x.val2, 0, sizeof(quint64));
+        buffer[0] = static_cast<quint8>(temp & 0xFF);
+        buffer[1] = static_cast<quint8>((temp >> 8) & 0xFF);
+        buffer[2] = static_cast<quint8>((temp >> 16) & 0xFF);
+        buffer[3] = static_cast<quint8>((temp >> 24) & 0xFF);
+        buffer[4] = static_cast<quint8>((temp >> 32) & 0xFF);
+        buffer[5] = static_cast<quint8>((temp >> 40) & 0xFF);
+        buffer[6] = static_cast<quint8>((temp >> 48) & 0xFF);
+        buffer[7] = static_cast<quint8>((temp >> 56) & 0xFF);
     }
     else
     {
-        bytesWritten = writeBlock(&value, 0, sizeof(double));
+        buffer[0] = static_cast<quint8>((temp >> 56) & 0xFF);
+        buffer[1] = static_cast<quint8>((temp >> 48) & 0xFF);
+        buffer[2] = static_cast<quint8>((temp >> 40) & 0xFF);
+        buffer[3] = static_cast<quint8>((temp >> 32) & 0xFF);
+        buffer[4] = static_cast<quint8>((temp >> 24) & 0xFF);
+        buffer[5] = static_cast<quint8>((temp >> 16) & 0xFF);
+        buffer[6] = static_cast<quint8>((temp >> 8) & 0xFF);
+        buffer[7] = static_cast<quint8>(temp & 0xFF);
     }
 
-    return bytesWritten;
+    return writeBlock(buffer.data(), 0, sizeof(temp));
+
+//    qint64 bytesWritten = -1;
+
+//    if (m_doswap)
+//    {
+//        union
+//        {
+//            double val1;
+//            quint64 val2;
+//        } x;
+
+//        x.val1 = value;
+//        x.val2 = common::swap<quint64>(x.val2);
+
+//        bytesWritten = writeBlock(&x.val2, 0, sizeof(quint64));
+//    }
+//    else
+//    {
+//        bytesWritten = writeBlock(&value, 0, sizeof(double));
+//    }
+
+//    return bytesWritten;
 }
 
-qint32 BinaryWriter::write(const float &value)
+qint64 BinaryWriter::write(float value)
 {
-    qint32 bytesWritten = -1;
+//    qint64 bytesWritten = -1;
+    std::array<quint8, sizeof(value)> buffer;
+    quint32 temp;
+    std::memcpy(&temp, &value, sizeof(value));
 
-    if (m_doswap)
+    if (m_byteOrder == QSysInfo::Endian::LittleEndian)
     {
-        union
-        {
-            float val1;
-            quint32 val2;
-        } x;
-
-        x.val1 = value;
-        x.val2 = swap(x.val2);
-
-        bytesWritten = writeBlock(&x.val2, 0, sizeof(quint32));
+        buffer[0] = static_cast<quint8>(temp & 0xFF);
+        buffer[1] = static_cast<quint8>((temp >> 8) & 0xFF);
+        buffer[2] = static_cast<quint8>((temp >> 16) & 0xFF);
+        buffer[3] = static_cast<quint8>((temp >> 24) & 0xFF);
     }
     else
     {
-        bytesWritten = writeBlock(&value, 0, sizeof(float));
+        buffer[0] = static_cast<quint8>((temp >> 24) & 0xFF);
+        buffer[1] = static_cast<quint8>((temp >> 16) & 0xFF);
+        buffer[2] = static_cast<quint8>((temp >> 8) & 0xFF);
+        buffer[3] = static_cast<quint8>(temp & 0xFF);
     }
 
-    return bytesWritten;
+    return writeBlock(buffer.data(), 0, sizeof(temp));
+//    return writeBlock(buffer.data(), 0, sizeof(float));
+//    if (m_doswap)
+//    {
+//        union
+//        {
+//            float val1;
+//            quint32 val2;
+//        } x;
+
+//        x.val1 = value;
+//        x.val2 = common::swap<quint32>(x.val2);
+
+//        bytesWritten = writeBlock(&x.val2, 0, sizeof(quint32));
+//    }
+//    else
+//    {
+//        bytesWritten = writeBlock(&value, 0, sizeof(float));
+//    }
+
+//    return bytesWritten;
 }
 
-qint32 BinaryWriter::write(const QByteArray &value, const qint32 &index, const qint32 &count)
+qint64 BinaryWriter::write(const QByteArray &value, const qint32 &index, const qint32 &count)
 {
     return writeBlock(value.data(), index, count);
 }
 
-qint32 BinaryWriter::write(const QByteArray &value)
+qint64 BinaryWriter::write(const QByteArray &value)
 {
     return write(value, 0, value.size());
 }
 
-qint32 BinaryWriter::write(const QVector<quint8> &value, const qint32 &index, const qint32 &count)
+qint64 BinaryWriter::write(const QVector<quint8> &value, const qint32 &index, const qint32 &count)
 {
     return writeBlock(value.data(), index, count);
 }
 
-qint32 BinaryWriter::write(const QVector<quint8> &value)
+qint64 BinaryWriter::write(const QVector<quint8> &value)
 {
     return write(value, 0, value.size());
 }
 
-qint32 BinaryWriter::write(const qint8 &value)
+qint64 BinaryWriter::write(qint8 value)
 {
     return writeBlock(&value, 0, sizeof(value));
 }
 
-qint32 BinaryWriter::write(const qint16 &value)
+qint64 BinaryWriter::write(qint16 value)
 {
-    qint16 buffer = (m_doswap) ? swap(value) : value;
+    qint16 buffer = (m_doswap) ? common::swap<qint16>(value) : value;
 
     return writeBlock(&buffer, 0, sizeof(buffer));
 }
 
-qint32 BinaryWriter::write(const qint32 &value)
+qint64 BinaryWriter::write(qint32 value)
 {
-    qint32 buffer = (m_doswap) ? swap(value) : value;
+    qint32 buffer = (m_doswap) ? common::swap<qint32>(value) : value;
 
     return writeBlock(&buffer, 0, sizeof(buffer));
 }
 
-qint32 BinaryWriter::write(const qint64 &value)
+qint64 BinaryWriter::write(qint64 value)
 {
-    qint64 buffer = (m_doswap) ? swap(value) : value;
+    qint64 buffer = (m_doswap) ? common::swap<qint64>(value) : value;
 
     return writeBlock(&buffer, 0, sizeof(buffer));
 }
 
-qint32 BinaryWriter::write(const QString &value)
+qint64 BinaryWriter::write(const QString &value)
 {
-    if (!m_codec->canEncode(value))
+    if (!m_codec->canEncode(value)) {
         throw QString("Unable to convert string to specified encoding!");
+    }
 
-    qint32 bytesWritten = 0;
+    qint64 bytesWritten = 0;
     if (value.size() > 0)
     {
         QByteArray qba = m_codec->fromUnicode(value);
@@ -191,37 +247,37 @@ qint32 BinaryWriter::write(const QString &value)
     return bytesWritten;
 }
 
-qint32 BinaryWriter::write(const quint8 &value)
+qint64 BinaryWriter::write(quint8 value)
 {
     return writeBlock(&value, 0, sizeof(value));
 }
 
-qint32 BinaryWriter::write(const quint16 &value)
+qint64 BinaryWriter::write(quint16 value)
 {
-    quint16 buffer = (m_doswap) ? swap(value) : value;
+    quint16 buffer = (m_doswap) ? common::swap<quint16>(value) : value;
 
     return writeBlock(&buffer, 0, sizeof(buffer));
 }
 
-qint32 BinaryWriter::write(const quint32 &value)
+qint64 BinaryWriter::write(quint32 value)
 {
-    quint32 buffer = (m_doswap) ? swap(value) : value;
+    quint32 buffer = (m_doswap) ? common::swap<quint32>(value) : value;
 
     return writeBlock(&buffer, 0, sizeof(buffer));
 }
 
-qint32 BinaryWriter::write(const quint64 &value)
+qint64 BinaryWriter::write(quint64 value)
 {
-    quint64 buffer = (m_doswap) ? swap(value) : value;
+    quint64 buffer = (m_doswap) ? common::swap<quint64>(value) : value;
 
     return writeBlock(&buffer, 0, sizeof(buffer));
 }
 
-qint32 BinaryWriter::write7BitEncodedInt(const qint32 &value)
+qint64 BinaryWriter::write7BitEncodedInt(qint32 value)
 {
     // Number is processed Little-Endian
-    quint32 v = native_to_little(static_cast<quint32>(value)); // support negative numbers
-    qint32 bytesWritten = 0;
+    quint32 v = common::native_to_little<quint32>(static_cast<quint32>(value)); // support negative numbers
+    qint64 bytesWritten = 0;
     while (v >= 0x80)
     {
         bytesWritten += write(static_cast<quint8>(v | 0x80));
@@ -233,7 +289,7 @@ qint32 BinaryWriter::write7BitEncodedInt(const qint32 &value)
     return bytesWritten;
 }
 
-qint32 BinaryWriter::writeBString(const QString &value)
+qint64 BinaryWriter::writeBString(const QString &value)
 {
     if (!m_codec->canEncode(value))
         throw QString("Unable to convert string to specified encoding!");
@@ -243,54 +299,57 @@ qint32 BinaryWriter::writeBString(const QString &value)
         qba.resize(0xFF);
     quint8 size = static_cast<quint8>(qba.size());
 
-    qint32 bytesWritten = 0;
+    qint64 bytesWritten = 0;
     bytesWritten += write(size);
     bytesWritten += write(qba);
 
     return bytesWritten;
 }
 
-qint32 BinaryWriter::writeBZString(const QString &value)
+qint64 BinaryWriter::writeBZString(const QString &value)
 {
     if (!m_codec->canEncode(value))
         throw QString("Unable to convert string to specified encoding!");
 
     QByteArray qba = m_codec->fromUnicode(value);
-    if (qba.size() >= 0xFF)
+    if (qba.size() >= 0xFF) {
         qba.resize(0xFE);
+    }
 
     // Append null to the string.
     qba += char(0);
     quint8 size = static_cast<quint8>(qba.size());
 
-    qint32 bytesWritten = 0;
+    qint64 bytesWritten = 0;
     bytesWritten += write(size);
     bytesWritten += write(qba);
 
     return bytesWritten;
 }
 
-qint32 BinaryWriter::writeWString(const QString &value)
+qint64 BinaryWriter::writeWString(const QString &value)
 {
-    if (!m_codec->canEncode(value))
+    if (!m_codec->canEncode(value)) {
         throw QString("Unable to convert string to specified encoding!");
+    }
 
     QByteArray qba = m_codec->fromUnicode(value);
     if (qba.size() > 0xFFFF)
         qba.resize(0xFFFF);
     quint16 size = static_cast<quint16>(qba.size());
 
-    qint32 bytesWritten = 0;
+    qint64 bytesWritten = 0;
     bytesWritten += write(size);
     bytesWritten += write(qba);
 
     return bytesWritten;
 }
 
-qint32 BinaryWriter::writeWZString(const QString &value)
+qint64 BinaryWriter::writeWZString(const QString &value)
 {
-    if (!m_codec->canEncode(value))
+    if (!m_codec->canEncode(value)) {
         throw QString("Unable to convert string to specified encoding!");
+    }
 
     QByteArray qba = m_codec->fromUnicode(value);
     if (qba.size() >= 0xFFFF)
@@ -300,17 +359,18 @@ qint32 BinaryWriter::writeWZString(const QString &value)
     qba += char(0);
     quint16 size = static_cast<quint16>(qba.size());
 
-    qint32 bytesWritten = 0;
+    qint64 bytesWritten = 0;
     bytesWritten += write(size);
     bytesWritten += write(qba);
 
     return bytesWritten;
 }
 
-qint32 BinaryWriter::writeZString(const QString &value)
+qint64 BinaryWriter::writeZString(const QString &value)
 {
-    if (!m_codec->canEncode(value))
+    if (!m_codec->canEncode(value)) {
         throw QString("Unable to convert string to specified encoding!");
+    }
 
     QByteArray qba = m_codec->fromUnicode(value);
     // Append null to the string.
@@ -324,22 +384,26 @@ qint64 BinaryWriter::writeBlock(const void *buffer, const qint64 &index, const q
     QMutexLocker lock(&m_writeMutex);
     qint64 bytesWritten = -1;
 
-    if (!m_baseDevice->isWritable())
+    if (!m_baseDevice->isWritable()) {
         return -1;
+    }
 
     try
     {
-        if (index < 0 || count < 0)
+        if (index < 0 || count < 0) {
             return -1;
-        else if (count == 0)
+        }
+        else if (count == 0) {
             return 0;
+        }
 
         const char *current = reinterpret_cast<const char *>(buffer) + index;
 
         bytesWritten = m_baseDevice->write(current, count);
 
-        if (bytesWritten != count)
+        if (bytesWritten != count) {
             m_status = WriteFailed;
+        }
 
     }
     catch(...)
