@@ -24,10 +24,12 @@
 
 #include <QByteArray>
 #include <QObject>
-#include <QDataStream>
+//#include <QDataStream>
+#include <QIODevice>
 #include <QMutex>
 #include <QTextCodec>
 #include <QVector>
+#include <common/macrohelpers.hpp>
 
 namespace qkeeg { namespace io {
 
@@ -59,6 +61,8 @@ public:
     QSysInfo::Endian byteOrder() const;
     void setByteOrder(const QSysInfo::Endian &byteOrder);
 
+    BinaryReader::Status status() const;
+
     /// Read functions
 
     /// Reads the specified number of bytes from the stream, starting from a specified point in the byte array.
@@ -68,7 +72,8 @@ public:
     /// Reads in a 32-bit integer in compressed format.
     virtual qint32 read7BitEncodedInt();
 
-    /// Reads a Boolean value from the current device and advances the current position of the device by sizeof(bool).
+    /// Reads a Boolean value from the current device as a byte and advances
+    /// the current position of the device by sizeof(qint8).
     virtual bool readBoolean();
     /// Reads the next byte from the current device and advances the current position of the device by one byte.
     virtual quint8 readByte();
@@ -111,7 +116,7 @@ protected:
     QIODevice*       m_baseDevice;
     QTextCodec*      m_codec;
     QSysInfo::Endian m_byteOrder;
-    QMutex           m_writeMutex;
+    QMutex           m_readMutex;
     bool             m_doswap;
     Status           m_status;
 
