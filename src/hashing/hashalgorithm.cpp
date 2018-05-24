@@ -20,6 +20,7 @@
  * IN THE SOFTWARE.
  */
 #include "hashalgorithm.hpp"
+#include <memory>
 
 namespace qkeeg { namespace hashing {
 

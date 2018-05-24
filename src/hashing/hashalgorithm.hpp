@@ -26,8 +26,6 @@
 #include <QByteArray>
 #include <QIODevice>
 #include <QString>
-//#include <QObject>
-//#include <QDataStream>
 #include <type_traits>
 
 #ifndef HASH_BLOCK_BUFFER_SIZE
@@ -38,9 +36,8 @@
 
 namespace qkeeg { namespace hashing {
 
-class HashAlgorithm /*: public QObject*/
+class HashAlgorithm
 {
-    //Q_OBJECT
     Q_GADGET
 
 public:
@@ -84,7 +81,6 @@ protected:
 protected:
     const qint64 m_blockSizeBuffer = HASH_BLOCK_BUFFER_SIZE;
     QByteArray m_hashValue;
-//    quint32 m_state = 0;
 
 private:
     static_assert(std::is_same<quint8, unsigned char>::value,
