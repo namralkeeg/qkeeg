@@ -45,13 +45,15 @@ template <typename T> Q_ALWAYS_INLINE void to_aligned(T x, void* dest) Q_DECL_NO
 template <typename T> Q_ALWAYS_INLINE T from_unaligned(const void* src) Q_DECL_NOEXCEPT
 {
     T dest;
-    std::memcpy(&dest, src, sizeof(T));
+    const size_t size = sizeof(T);
+    std::memcpy(&dest, src, size);
     return dest;
 }
 
 template <typename T> Q_ALWAYS_INLINE void to_unaligned(const T src, void* dest) Q_DECL_NOEXCEPT
 {
-    std::memcpy(dest, &src, sizeof(T));
+    const size_t size = sizeof(T);
+    std::memcpy(dest, &src, size);
 }
 
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
@@ -72,24 +74,28 @@ template <typename T> inline void reverse_copy_big(const void* src, T& dest) Q_D
 
 template <typename T> inline void reverse_copy_little(T src, void* dest) Q_DECL_NOEXCEPT
 {
-    std::memcpy(dest, &src, sizeof(T));
+    const size_t size = sizeof(T);
+    std::memcpy(dest, &src, size);
 }
 
 template <typename T> inline void reverse_copy_little(const void* src, T& dest) Q_DECL_NOEXCEPT
 {
-    std::memcpy(&dest, src, sizeof(T));
+    const size_t size = sizeof(T);
+    std::memcpy(&dest, src, size);
 }
 
 #else // Q_BIG_ENDIAN
 
 template <typename T> inline void reverse_copy_big(T src, void* dest) Q_DECL_NOEXCEPT
 {
-    std::memcpy(dest, &src, sizeof(T));
+    const size_t size = sizeof(T);
+    std::memcpy(dest, &src, size);
 }
 
 template <typename T> inline void reverse_copy_big(const void* src, T& dest) Q_DECL_NOEXCEPT
 {
-    std::memcpy(&dest, src, sizeof(T));
+    const size_t size = sizeof(T);
+    std::memcpy(&dest, src, size);
 }
 
 template <typename T> inline void reverse_copy_little(T src, void* dest) Q_DECL_NOEXCEPT
