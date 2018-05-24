@@ -38,6 +38,8 @@ namespace qkeeg { namespace hashing { namespace crc {
 
 class Crc32 : public HashAlgorithm
 {
+    Q_GADGET
+
 public:
     //! Constructor
     Crc32(const quint32 &polynomial = DEFAULT_POLYNOMIAL32, const quint32 &seed = UINT32_C(0));
@@ -52,14 +54,23 @@ protected:
     virtual QByteArray hashFinal() override;
 
 private:
-    static const quint32 TableEntries   = UINT32_C(256);
-    static const quint32 m_hashSize     = std::numeric_limits<quint32>::digits;
+    #ifdef CRC32_SLICING_BY_16
+    static const quint32 MaxSlice = UINT32_C(16);
+    #elif defined(CRC32_SLICING_BY_8)
+    static const quint32 MaxSlice = UINT32_C(8);
+    #elif defined(CRC32_SLICING_BY_4)
+    static const quint32 MaxSlice = UINT32_C(4);
+    #else
+    static const quint32 MaxSlice = UINT32_C(1);
+    #endif
+    static const quint32 TableEntries  = UINT32_C(256);
+    static const quint32 m_hashSize    = std::numeric_limits<quint32>::digits;
 
-    /// CRC32 polynomial
+    //! CRC32 polynomial
     quint32 m_polynomial;
     quint32 m_seed;
     quint32 m_hash;
-    std::array<quint32, TableEntries> m_lookupTable;
+    std::array<std::array<quint32, TableEntries>, MaxSlice> m_lookupTable;
 
     void initializeTable();
 };
