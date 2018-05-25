@@ -19,25 +19,38 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-#include "fnv1ahash32.hpp"
+#ifndef JSHASH32_HPP
+#define JSHASH32_HPP
+
+#include "../hashalgorithm.hpp"
 
 namespace qkeeg { namespace hashing { namespace noncryptographic {
 
-Fnv1aHash32::Fnv1aHash32() : Fnv1Hash32()
+//! Justin Sobel Hash
+class JSHash32 : public HashAlgorithm
 {
+    Q_GADGET
 
-}
+public:
+    JSHash32();
 
-void Fnv1aHash32::hashCore(const void *data, const qint64 &offset, const qint64 &count)
-{
-    const quint8 *current = reinterpret_cast<const quint8*>(data) + offset;
+    // HashAlgorithm interface
+public:
+    virtual void initialize() override;
+    virtual quint32 hashSize() override;
 
-    for (qint64 i = 0; i < count; ++current, ++i)
-    {
-        m_hash = (*current ^ m_hash) * m_fnvPrime;
-    }
-}
+protected:
+    virtual void hashCore(const void *data, const qint64 &offset, const qint64 &count) override;
+    virtual QByteArray hashFinal() override;
+
+private:
+    static const quint32 m_hashSize = std::numeric_limits<quint32>::digits;
+    const quint32 m_seed = UINT32_C(1315423911);
+    quint32 m_hash;
+};
 
 } // namespace noncryptographic
 } // namespace hashing
 } // namespace qkeeg
+
+#endif // JSHASH32_HPP

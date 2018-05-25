@@ -30,7 +30,7 @@ Fnv1aHash64::Fnv1aHash64() : Fnv1Hash64()
 
 void Fnv1aHash64::hashCore(const void *data, const qint64 &offset, const qint64 &count)
 {
-    const quint8 *current = static_cast<const quint8*>(data) + offset;
+    const quint8 *current = reinterpret_cast<const quint8*>(data) + offset;
 
     for (qint64 i = 0; i < count; ++current, ++i)
     {

@@ -19,25 +19,37 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-#include "fnv1ahash32.hpp"
+#ifndef JOAATHASH32_HPP
+#define JOAATHASH32_HPP
+
+#include "../hashalgorithm.hpp"
 
 namespace qkeeg { namespace hashing { namespace noncryptographic {
 
-Fnv1aHash32::Fnv1aHash32() : Fnv1Hash32()
+//! Bob Jenkins One-at-a-Time hash
+class JOAATHash32 : public HashAlgorithm
 {
+    Q_GADGET
 
-}
+public:
+    JOAATHash32();
 
-void Fnv1aHash32::hashCore(const void *data, const qint64 &offset, const qint64 &count)
-{
-    const quint8 *current = reinterpret_cast<const quint8*>(data) + offset;
+    // HashAlgorithm interface
+public:
+    virtual void initialize() override;
+    virtual quint32 hashSize() override;
 
-    for (qint64 i = 0; i < count; ++current, ++i)
-    {
-        m_hash = (*current ^ m_hash) * m_fnvPrime;
-    }
-}
+protected:
+    virtual void hashCore(const void *data, const qint64 &offset, const qint64 &count) override;
+    virtual QByteArray hashFinal() override;
+
+private:
+    static const quint32 m_hashSize = std::numeric_limits<quint32>::digits;
+    quint32 m_hash;
+};
 
 } // namespace noncryptographic
 } // namespace hashing
 } // namespace qkeeg
+
+#endif // JOAATHASH32_HPP

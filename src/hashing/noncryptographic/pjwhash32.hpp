@@ -19,25 +19,40 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-#include "fnv1ahash32.hpp"
+#ifndef PJWHASH32_HPP
+#define PJWHASH32_HPP
+
+#include "../hashalgorithm.hpp"
 
 namespace qkeeg { namespace hashing { namespace noncryptographic {
 
-Fnv1aHash32::Fnv1aHash32() : Fnv1Hash32()
+class PJWHash32 : public HashAlgorithm
 {
+    Q_GADGET
 
-}
+public:
+    PJWHash32();
 
-void Fnv1aHash32::hashCore(const void *data, const qint64 &offset, const qint64 &count)
-{
-    const quint8 *current = reinterpret_cast<const quint8*>(data) + offset;
+    // HashAlgorithm interface
+public:
+    virtual void initialize() override;
+    virtual quint32 hashSize() override;
 
-    for (qint64 i = 0; i < count; ++current, ++i)
-    {
-        m_hash = (*current ^ m_hash) * m_fnvPrime;
-    }
-}
+protected:
+    virtual void hashCore(const void *data, const qint64 &offset, const qint64 &count) override;
+    virtual QByteArray hashFinal() override;
+
+private:
+    static const quint32 BitsInUnsignedInt = std::numeric_limits<quint32>::digits;
+    static const quint32 ThreeQuarters     = (BitsInUnsignedInt  * 3) / 4;
+    static const quint32 OneEighth         = BitsInUnsignedInt / 8;
+    static const quint32 HighBits          = UINT32_C(0xFFFFFFFF) << (BitsInUnsignedInt - OneEighth);
+
+    quint32 m_hash;
+};
 
 } // namespace noncryptographic
 } // namespace hashing
 } // namespace qkeeg
+
+#endif // PJWHASH32_HPP

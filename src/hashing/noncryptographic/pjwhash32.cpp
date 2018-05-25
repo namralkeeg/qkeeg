@@ -19,23 +19,47 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-#include "fnv1ahash32.hpp"
+#include "pjwhash32.hpp"
+#include "../../common/endian.hpp"
 
 namespace qkeeg { namespace hashing { namespace noncryptographic {
 
-Fnv1aHash32::Fnv1aHash32() : Fnv1Hash32()
+PJWHash32::PJWHash32() : HashAlgorithm()
 {
-
+    initialize();
 }
 
-void Fnv1aHash32::hashCore(const void *data, const qint64 &offset, const qint64 &count)
+void PJWHash32::initialize()
+{
+    m_hash = 0;
+    m_hashValue.clear();
+}
+
+quint32 PJWHash32::hashSize()
+{
+    return BitsInUnsignedInt;
+}
+
+void PJWHash32::hashCore(const void *data, const qint64 &offset, const qint64 &count)
 {
     const quint8 *current = reinterpret_cast<const quint8*>(data) + offset;
+    quint32 test = 0;
 
-    for (qint64 i = 0; i < count; ++current, ++i)
+    for(qint64 i = 0; i < count; ++current, ++i)
     {
-        m_hash = (*current ^ m_hash) * m_fnvPrime;
+        m_hash = (m_hash << OneEighth) + *current;
+
+        if((test = m_hash & HighBits) != 0) {
+            m_hash = ((m_hash ^ (test >> ThreeQuarters)) & (~HighBits));
+        }
     }
+}
+
+QByteArray PJWHash32::hashFinal()
+{
+    QByteArray buffer(sizeof(m_hash), char(0));
+    common::to_unaligned<quint32>(m_hash, buffer.data());
+    return buffer;
 }
 
 } // namespace noncryptographic
