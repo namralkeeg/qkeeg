@@ -38,7 +38,10 @@ SOURCES += \
     src/hashing/crc/crc32.cpp \
     src/hashing/crc/crc64.cpp \
     src/hashing/checksum/adler32.cpp \
-    src/hashing/checksum/fletcher32.cpp
+    src/hashing/checksum/fletcher32.cpp \
+    src/hashing/noncryptographic/aphash32.cpp \
+    src/hashing/noncryptographic/bkdrhash32.cpp \
+    src/hashing/noncryptographic/djb2hash32.cpp
 
 HEADERS += \
     src/common/stringutils.hpp \
@@ -53,7 +56,10 @@ HEADERS += \
     src/hashing/crc/crc32.hpp \
     src/hashing/crc/crc64.hpp \
     src/hashing/checksum/adler32.hpp \
-    src/hashing/checksum/fletcher32.hpp
+    src/hashing/checksum/fletcher32.hpp \
+    src/hashing/noncryptographic/aphash32.hpp \
+    src/hashing/noncryptographic/bkdrhash32.hpp \
+    src/hashing/noncryptographic/djb2hash32.hpp
 
 unix {
     target.path = /usr/lib
@@ -72,7 +78,7 @@ unix {
 
         #  Optimization flags
         #QMAKE_CXXFLAGS_RELEASE -= /O2
-        QMAKE_CXXFLAGS_RELEASE *= /O2 /Ot /Ox /GL
+        QMAKE_CXXFLAGS_RELEASE *= /O2 /Ot /Ox #/GL
         #  Multithreaded compiling for Visual Studio
         QMAKE_CXXFLAGS += -MP
         # Linker flags
