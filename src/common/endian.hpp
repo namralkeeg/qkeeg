@@ -50,10 +50,64 @@ template <typename T> Q_ALWAYS_INLINE T from_unaligned(const void* src) Q_DECL_N
     return dest;
 }
 
+template <> Q_ALWAYS_INLINE quint16 from_unaligned<quint16>(const void *src) Q_DECL_NOEXCEPT
+{
+    const quint8 *current = reinterpret_cast<const quint8*>(src);
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+    return (current[0] & 0xFF) | ((current[1] << 8) & 0xFF);
+#else // Q_BIG_ENDIAN
+    return ((current[0] & 0xFF) << 8) | (current[1] & 0xFF)
+#endif
+}
+
+template <> Q_ALWAYS_INLINE quint32 from_unaligned<quint32>(const void *src) Q_DECL_NOEXCEPT
+{
+    const quint8 *current = reinterpret_cast<const quint8*>(src);
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+    return (current[0] & 0xFF) |
+            ((current[1] << 8) & 0xFF) |
+            ((current[2] << 16) & 0xFF) |
+            ((current[3] << 24) & 0xFF);
+#else // Q_BIG_ENDIAN
+    return ((current[0] & 0xFF) << 24) |
+            ((current[0] & 0xFF) << 16) |
+            ((current[0] & 0xFF) << 8) |
+            (current[1] & 0xFF)
+#endif
+}
+
 template <typename T> Q_ALWAYS_INLINE void to_unaligned(const T src, void* dest) Q_DECL_NOEXCEPT
 {
     const size_t size = sizeof(T);
     std::memcpy(dest, &src, size);
+}
+
+template <> Q_ALWAYS_INLINE void to_unaligned<quint16>(const quint16 src, void *dest) Q_DECL_NOEXCEPT
+{
+    quint8 *data = reinterpret_cast<quint8 *>(dest);
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+    data[0] = static_cast<quint8>(src & 0xFF);
+    data[1] = static_cast<quint8>((src >> 8) & 0xFF);
+#else // Q_BIG_ENDIAN
+    data[0] = static_cast<quint8>((src >> 8) & 0xFF);
+    data[1] = static_cast<quint8>(src & 0xFF);
+#endif
+}
+
+template <> Q_ALWAYS_INLINE void to_unaligned<quint32>(const quint32 src, void *dest) Q_DECL_NOEXCEPT
+{
+    quint8 *data = reinterpret_cast<quint8 *>(dest);
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+    data[0] = static_cast<quint8>(src & 0xFF);
+    data[1] = static_cast<quint8>((src >>  8) & 0xFF);
+    data[2] = static_cast<quint8>((src >> 16) & 0xFF);
+    data[3] = static_cast<quint8>((src >> 24) & 0xFF);
+#else // Q_BIG_ENDIAN
+    data[0] = static_cast<quint8>((src >> 24) & 0xFF);
+    data[1] = static_cast<quint8>((src >> 16) & 0xFF);
+    data[2] = static_cast<quint8>((src >>  8) & 0xFF);
+    data[3] = static_cast<quint8>(src & 0xFF);
+#endif
 }
 
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
