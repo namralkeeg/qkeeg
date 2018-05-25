@@ -41,7 +41,8 @@ SOURCES += \
     src/hashing/checksum/fletcher32.cpp \
     src/hashing/noncryptographic/aphash32.cpp \
     src/hashing/noncryptographic/bkdrhash32.cpp \
-    src/hashing/noncryptographic/djb2hash32.cpp
+    src/hashing/noncryptographic/djb2hash32.cpp \
+    src/hashing/noncryptographic/elfhash32.cpp
 
 HEADERS += \
     src/common/stringutils.hpp \
@@ -59,7 +60,8 @@ HEADERS += \
     src/hashing/checksum/fletcher32.hpp \
     src/hashing/noncryptographic/aphash32.hpp \
     src/hashing/noncryptographic/bkdrhash32.hpp \
-    src/hashing/noncryptographic/djb2hash32.hpp
+    src/hashing/noncryptographic/djb2hash32.hpp \
+    src/hashing/noncryptographic/elfhash32.hpp
 
 unix {
     target.path = /usr/lib
