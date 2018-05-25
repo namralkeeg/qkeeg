@@ -36,7 +36,9 @@ SOURCES += \
     src/io/binarywriter.cpp \
     src/hashing/hashalgorithm.cpp \
     src/hashing/crc/crc32.cpp \
-    src/hashing/crc/crc64.cpp
+    src/hashing/crc/crc64.cpp \
+    src/hashing/checksum/adler32.cpp \
+    src/hashing/checksum/fletcher32.cpp
 
 HEADERS += \
     src/common/stringutils.hpp \
@@ -49,7 +51,9 @@ HEADERS += \
     src/hashing/hashalgorithm.hpp \
     src/common/cryptotransform.hpp \
     src/hashing/crc/crc32.hpp \
-    src/hashing/crc/crc64.hpp
+    src/hashing/crc/crc64.hpp \
+    src/hashing/checksum/adler32.hpp \
+    src/hashing/checksum/fletcher32.hpp
 
 unix {
     target.path = /usr/lib
