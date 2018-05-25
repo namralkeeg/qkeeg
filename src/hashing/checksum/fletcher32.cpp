@@ -26,7 +26,7 @@ namespace qkeeg { namespace hashing { namespace checksum {
 
 Fletcher32::Fletcher32() : m_sum1(m_seed), m_sum2(m_seed)
 {
-
+    initialize();
 }
 
 void Fletcher32::initialize()

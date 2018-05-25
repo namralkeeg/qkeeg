@@ -32,7 +32,7 @@ namespace qkeeg { namespace hashing { namespace checksum {
 
 Adler32::Adler32()
 {
-
+    initialize();
 }
 
 void Adler32::initialize()
