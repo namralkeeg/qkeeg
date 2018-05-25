@@ -19,20 +19,20 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-#ifndef PJWHASH32_HPP
-#define PJWHASH32_HPP
+#ifndef SAXHASH32_HPP
+#define SAXHASH32_HPP
 
 #include "../hashalgorithm.hpp"
 
 namespace qkeeg { namespace hashing { namespace noncryptographic {
 
-//! Peter J. Weinberger
-class PJWHash32 : public HashAlgorithm
+//! Shift-Add-XOR hash
+class SaxHash32 : public HashAlgorithm
 {
     Q_GADGET
 
 public:
-    PJWHash32();
+    SaxHash32();
 
     // HashAlgorithm interface
 public:
@@ -44,11 +44,7 @@ protected:
     virtual QByteArray hashFinal() override;
 
 private:
-    static const quint32 BitsInUnsignedInt = std::numeric_limits<quint32>::digits;
-    static const quint32 ThreeQuarters     = (BitsInUnsignedInt  * 3) / 4;
-    static const quint32 OneEighth         = BitsInUnsignedInt / 8;
-    static const quint32 HighBits          = UINT32_C(0xFFFFFFFF) << (BitsInUnsignedInt - OneEighth);
-
+    static const quint32 m_hashSize = std::numeric_limits<quint32>::digits;
     quint32 m_hash;
 };
 
@@ -56,4 +52,4 @@ private:
 } // namespace hashing
 } // namespace qkeeg
 
-#endif // PJWHASH32_HPP
+#endif // SAXHASH32_HPP

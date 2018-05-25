@@ -19,41 +19,44 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-#ifndef PJWHASH32_HPP
-#define PJWHASH32_HPP
-
-#include "../hashalgorithm.hpp"
+#include "saxhash32.hpp"
+#include "../../common/endian.hpp"
 
 namespace qkeeg { namespace hashing { namespace noncryptographic {
 
-//! Peter J. Weinberger
-class PJWHash32 : public HashAlgorithm
+SaxHash32::SaxHash32() : HashAlgorithm()
 {
-    Q_GADGET
+    initialize();
+}
 
-public:
-    PJWHash32();
+void SaxHash32::initialize()
+{
+    m_hash = 0;
+    m_hashValue.clear();
+}
 
-    // HashAlgorithm interface
-public:
-    virtual void initialize() override;
-    virtual quint32 hashSize() override;
+quint32 SaxHash32::hashSize()
+{
+    return m_hashSize;
+}
 
-protected:
-    virtual void hashCore(const void *data, const qint64 &offset, const qint64 &count) override;
-    virtual QByteArray hashFinal() override;
+void SaxHash32::hashCore(const void *data, const qint64 &offset, const qint64 &count)
+{
+    const quint8 *current = reinterpret_cast<const quint8*>(data) + offset;
 
-private:
-    static const quint32 BitsInUnsignedInt = std::numeric_limits<quint32>::digits;
-    static const quint32 ThreeQuarters     = (BitsInUnsignedInt  * 3) / 4;
-    static const quint32 OneEighth         = BitsInUnsignedInt / 8;
-    static const quint32 HighBits          = UINT32_C(0xFFFFFFFF) << (BitsInUnsignedInt - OneEighth);
+    for (qint64 i = 0; i < count; ++current, ++i)
+    {
+        m_hash ^= (m_hash << 5) + (m_hash >> 2) + *current;
+    }
+}
 
-    quint32 m_hash;
-};
+QByteArray SaxHash32::hashFinal()
+{
+    QByteArray buffer(sizeof(m_hash), char(0));
+    common::to_unaligned<quint32>(m_hash, buffer.data());
+    return buffer;
+}
 
 } // namespace noncryptographic
 } // namespace hashing
 } // namespace qkeeg
-
-#endif // PJWHASH32_HPP

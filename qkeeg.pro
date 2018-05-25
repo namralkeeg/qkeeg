@@ -49,7 +49,8 @@ SOURCES += \
     src/hashing/noncryptographic/fnv1ahash64.cpp \
     src/hashing/noncryptographic/joaathash32.cpp \
     src/hashing/noncryptographic/jshash32.cpp \
-    src/hashing/noncryptographic/pjwhash32.cpp
+    src/hashing/noncryptographic/pjwhash32.cpp \
+    src/hashing/noncryptographic/saxhash32.cpp
 
 HEADERS += \
     src/common/stringutils.hpp \
@@ -75,7 +76,8 @@ HEADERS += \
     src/hashing/noncryptographic/fnv1ahash64.hpp \
     src/hashing/noncryptographic/joaathash32.hpp \
     src/hashing/noncryptographic/jshash32.hpp \
-    src/hashing/noncryptographic/pjwhash32.hpp
+    src/hashing/noncryptographic/pjwhash32.hpp \
+    src/hashing/noncryptographic/saxhash32.hpp
 
 unix {
     target.path = /usr/lib
