@@ -42,7 +42,11 @@ SOURCES += \
     src/hashing/noncryptographic/aphash32.cpp \
     src/hashing/noncryptographic/bkdrhash32.cpp \
     src/hashing/noncryptographic/djb2hash32.cpp \
-    src/hashing/noncryptographic/elfhash32.cpp
+    src/hashing/noncryptographic/elfhash32.cpp \
+    src/hashing/noncryptographic/fnv1hash32.cpp \
+    src/hashing/noncryptographic/fnv1hash64.cpp \
+    src/hashing/noncryptographic/fnv1ahash32.cpp \
+    src/hashing/noncryptographic/fnv1ahash64.cpp
 
 HEADERS += \
     src/common/stringutils.hpp \
@@ -61,7 +65,11 @@ HEADERS += \
     src/hashing/noncryptographic/aphash32.hpp \
     src/hashing/noncryptographic/bkdrhash32.hpp \
     src/hashing/noncryptographic/djb2hash32.hpp \
-    src/hashing/noncryptographic/elfhash32.hpp
+    src/hashing/noncryptographic/elfhash32.hpp \
+    src/hashing/noncryptographic/fnv1hash32.hpp \
+    src/hashing/noncryptographic/fnv1hash64.hpp \
+    src/hashing/noncryptographic/fnv1ahash32.hpp \
+    src/hashing/noncryptographic/fnv1ahash64.hpp
 
 unix {
     target.path = /usr/lib

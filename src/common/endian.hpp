@@ -28,6 +28,8 @@
 #include <QSysInfo>
 #include <algorithm>
 #include <cstring>
+#include <memory>
+#include <type_traits>
 
 namespace qkeeg {
 namespace common {
@@ -54,9 +56,9 @@ template <> Q_ALWAYS_INLINE quint16 from_unaligned<quint16>(const void *src) Q_D
 {
     const quint8 *current = reinterpret_cast<const quint8*>(src);
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-    return (current[0] & 0xFF) | ((current[1] << 8) & 0xFF);
+    return (current[0]) | (current[1] << 8);
 #else // Q_BIG_ENDIAN
-    return ((current[0] & 0xFF) << 8) | (current[1] & 0xFF)
+    return (current[0] << 8) | (current[1]);
 #endif
 }
 
@@ -64,15 +66,40 @@ template <> Q_ALWAYS_INLINE quint32 from_unaligned<quint32>(const void *src) Q_D
 {
     const quint8 *current = reinterpret_cast<const quint8*>(src);
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-    return (current[0] & 0xFF) |
-            ((current[1] << 8) & 0xFF) |
-            ((current[2] << 16) & 0xFF) |
-            ((current[3] << 24) & 0xFF);
+    return  (current[0]) |
+            (current[1] << 8) |
+            (current[2] << 16) |
+            (current[3] << 24);
 #else // Q_BIG_ENDIAN
-    return ((current[0] & 0xFF) << 24) |
-            ((current[0] & 0xFF) << 16) |
-            ((current[0] & 0xFF) << 8) |
-            (current[1] & 0xFF)
+    return  (current[0] << 24) |
+            (current[1] << 16) |
+            (current[2] << 8) |
+            (current[3]);
+#endif
+}
+
+template <> Q_ALWAYS_INLINE quint64 from_unaligned<quint64>(const void *src) Q_DECL_NOEXCEPT
+{
+    const quint8 *current = reinterpret_cast<const quint8*>(src);
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+    return   static_cast<quint64>(current[0]) |
+            (static_cast<quint64>(current[1]) << 8) |
+            (static_cast<quint64>(current[2]) << 16) |
+            (static_cast<quint64>(current[3]) << 24) |
+            (static_cast<quint64>(current[4]) << 32) |
+            (static_cast<quint64>(current[5]) << 40) |
+            (static_cast<quint64>(current[6]) << 48) |
+            (static_cast<quint64>(current[7]) << 56);
+
+#else // Q_BIG_ENDIAN
+    return (static_cast<quint64>(current[0]) << 56) |
+            (static_cast<quint64>(current[1]) << 48) |
+            (static_cast<quint64>(current[2]) << 40) |
+            (static_cast<quint64>(current[3]) << 32) |
+            (static_cast<quint64>(current[4]) << 24) |
+            (static_cast<quint64>(current[5]) << 16) |
+            (static_cast<quint64>(current[6]) << 8) |
+             static_cast<quint64>(current[7]);
 #endif
 }
 
@@ -108,6 +135,46 @@ template <> Q_ALWAYS_INLINE void to_unaligned<quint32>(const quint32 src, void *
     data[2] = static_cast<quint8>((src >>  8) & 0xFF);
     data[3] = static_cast<quint8>(src & 0xFF);
 #endif
+}
+
+template <> Q_ALWAYS_INLINE void to_unaligned<quint64>(const quint64 src, void *dest) Q_DECL_NOEXCEPT
+{
+    quint8 *data = reinterpret_cast<quint8 *>(dest);
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+    data[0] = static_cast<quint8>(src & 0xFF);
+    data[1] = static_cast<quint8>((src >>  8) & 0xFF);
+    data[2] = static_cast<quint8>((src >> 16) & 0xFF);
+    data[3] = static_cast<quint8>((src >> 24) & 0xFF);
+    data[4] = static_cast<quint8>((src >> 32) & 0xFF);
+    data[5] = static_cast<quint8>((src >> 40) & 0xFF);
+    data[6] = static_cast<quint8>((src >> 48) & 0xFF);
+    data[7] = static_cast<quint8>((src >> 56) & 0xFF);
+#else // Q_BIG_ENDIAN
+    data[0] = static_cast<quint8>((src >> 56) & 0xFF);
+    data[1] = static_cast<quint8>((src >> 48) & 0xFF);
+    data[2] = static_cast<quint8>((src >> 40) & 0xFF);
+    data[3] = static_cast<quint8>((src >> 32) & 0xFF);
+    data[4] = static_cast<quint8>((src >> 24) & 0xFF);
+    data[5] = static_cast<quint8>((src >> 16) & 0xFF);
+    data[6] = static_cast<quint8>((src >>  8) & 0xFF);
+    data[7] = static_cast<quint8>(src & 0xFF);
+#endif
+}
+
+template <typename T> inline void to_bytes(const T &src, void *dest) Q_DECL_NOEXCEPT
+{
+    static_assert(std::is_trivially_copyable<T>::value, "T must be of trivially copyable type!");
+    const quint8 *begin = reinterpret_cast<const quint8*>(std::addressof(src));
+    const quint8 *end = begin + sizeof(T);
+    std::copy(begin, end, reinterpret_cast<quint8*>(dest));
+}
+
+template <typename T> inline void from_bytes(const void *src, T &dest) Q_DECL_NOEXCEPT
+{
+    static_assert(std::is_trivially_copyable<T>::value, "T must be of trivially copyable type!");
+    const quint8 *begin = reinterpret_cast<const quint8*>(src);
+    const quint8 *end = begin + sizeof(T);
+    std::copy(begin, end, reinterpret_cast<quint8*>(std::addressof(dest)));
 }
 
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
