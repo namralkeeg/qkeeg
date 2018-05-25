@@ -28,6 +28,8 @@ namespace qkeeg { namespace hashing { namespace checksum {
 
 class Fletcher32 : public HashAlgorithm
 {
+    Q_GADGET
+
 public:
     Fletcher32();
 
