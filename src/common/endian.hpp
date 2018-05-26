@@ -52,36 +52,32 @@ template <typename T> Q_ALWAYS_INLINE T from_unaligned(const void* src) Q_DECL_N
     return dest;
 }
 
-template <> Q_ALWAYS_INLINE quint16 from_unaligned<quint16>(const void *src) Q_DECL_NOEXCEPT
+template <typename T> Q_ALWAYS_INLINE void to_unaligned(const T src, void* dest) Q_DECL_NOEXCEPT
 {
-    const quint8 *current = reinterpret_cast<const quint8*>(src);
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-    return (current[0]) | (current[1] << 8);
-#else // Q_BIG_ENDIAN
-    return (current[0] << 8) | (current[1]);
-#endif
+    const size_t size = sizeof(T);
+    std::memcpy(dest, &src, size);
 }
 
-template <> Q_ALWAYS_INLINE quint32 from_unaligned<quint32>(const void *src) Q_DECL_NOEXCEPT
+template <typename T> Q_ALWAYS_INLINE T bytes_to_int_little(const void *src) Q_DECL_NOEXCEPT;
+
+template <> Q_ALWAYS_INLINE quint16 bytes_to_int_little<quint16>(const void *src) Q_DECL_NOEXCEPT
 {
     const quint8 *current = reinterpret_cast<const quint8*>(src);
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+    return (current[0]) | (current[1] << 8);
+}
+
+template <> Q_ALWAYS_INLINE quint32 bytes_to_int_little<quint32>(const void *src) Q_DECL_NOEXCEPT
+{
+    const quint8 *current = reinterpret_cast<const quint8*>(src);
     return  (current[0]) |
             (current[1] << 8) |
             (current[2] << 16) |
             (current[3] << 24);
-#else // Q_BIG_ENDIAN
-    return  (current[0] << 24) |
-            (current[1] << 16) |
-            (current[2] << 8) |
-            (current[3]);
-#endif
 }
 
-template <> Q_ALWAYS_INLINE quint64 from_unaligned<quint64>(const void *src) Q_DECL_NOEXCEPT
+template <> Q_ALWAYS_INLINE quint64 bytes_to_int_little<quint64>(const void *src) Q_DECL_NOEXCEPT
 {
     const quint8 *current = reinterpret_cast<const quint8*>(src);
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
     return   static_cast<quint64>(current[0]) |
             (static_cast<quint64>(current[1]) << 8) |
             (static_cast<quint64>(current[2]) << 16) |
@@ -90,9 +86,44 @@ template <> Q_ALWAYS_INLINE quint64 from_unaligned<quint64>(const void *src) Q_D
             (static_cast<quint64>(current[5]) << 40) |
             (static_cast<quint64>(current[6]) << 48) |
             (static_cast<quint64>(current[7]) << 56);
+}
 
-#else // Q_BIG_ENDIAN
-    return (static_cast<quint64>(current[0]) << 56) |
+template <> Q_ALWAYS_INLINE qint16 bytes_to_int_little<qint16>(const void *src) Q_DECL_NOEXCEPT
+{
+    return static_cast<qint16>(bytes_to_int_little<quint16>(src));
+}
+
+template <> Q_ALWAYS_INLINE qint32 bytes_to_int_little<qint32>(const void *src) Q_DECL_NOEXCEPT
+{
+    return static_cast<qint32>(bytes_to_int_little<quint32>(src));
+}
+
+template <> Q_ALWAYS_INLINE qint64 bytes_to_int_little<qint64>(const void *src) Q_DECL_NOEXCEPT
+{
+    return static_cast<qint64>(bytes_to_int_little<quint64>(src));
+}
+
+template <typename T> Q_ALWAYS_INLINE T bytes_to_int_big(const void *src) Q_DECL_NOEXCEPT;
+
+template <> Q_ALWAYS_INLINE quint16 bytes_to_int_big<quint16>(const void *src) Q_DECL_NOEXCEPT
+{
+    const quint8 *current = reinterpret_cast<const quint8*>(src);
+    return (current[0] << 8) | (current[1]);
+}
+
+template <> Q_ALWAYS_INLINE quint32 bytes_to_int_big<quint32>(const void *src) Q_DECL_NOEXCEPT
+{
+    const quint8 *current = reinterpret_cast<const quint8*>(src);
+    return  (current[0] << 24) |
+            (current[1] << 16) |
+            (current[2] << 8) |
+            (current[3]);
+}
+
+template <> Q_ALWAYS_INLINE quint64 bytes_to_int_big<quint64>(const void *src) Q_DECL_NOEXCEPT
+{
+    const quint8 *current = reinterpret_cast<const quint8*>(src);
+    return  (static_cast<quint64>(current[0]) << 56) |
             (static_cast<quint64>(current[1]) << 48) |
             (static_cast<quint64>(current[2]) << 40) |
             (static_cast<quint64>(current[3]) << 32) |
@@ -100,47 +131,44 @@ template <> Q_ALWAYS_INLINE quint64 from_unaligned<quint64>(const void *src) Q_D
             (static_cast<quint64>(current[5]) << 16) |
             (static_cast<quint64>(current[6]) << 8) |
              static_cast<quint64>(current[7]);
-#endif
 }
 
-template <typename T> Q_ALWAYS_INLINE void to_unaligned(const T src, void* dest) Q_DECL_NOEXCEPT
+template <> Q_ALWAYS_INLINE qint16 bytes_to_int_big<qint16>(const void *src) Q_DECL_NOEXCEPT
 {
-    const size_t size = sizeof(T);
-    std::memcpy(dest, &src, size);
+    return static_cast<qint16>(bytes_to_int_big<quint16>(src));
 }
 
-template <> Q_ALWAYS_INLINE void to_unaligned<quint16>(const quint16 src, void *dest) Q_DECL_NOEXCEPT
+template <> Q_ALWAYS_INLINE qint32 bytes_to_int_big<qint32>(const void *src) Q_DECL_NOEXCEPT
+{
+    return static_cast<qint32>(bytes_to_int_big<quint32>(src));
+}
+
+template <> Q_ALWAYS_INLINE qint64 bytes_to_int_big<qint64>(const void *src) Q_DECL_NOEXCEPT
+{
+    return static_cast<qint64>(bytes_to_int_big<quint64>(src));
+}
+
+template <typename T> Q_ALWAYS_INLINE void int_to_bytes_little(T src, void *dest) Q_DECL_NOEXCEPT;
+
+template <> Q_ALWAYS_INLINE void int_to_bytes_little<quint16>(quint16 src, void *dest) Q_DECL_NOEXCEPT
 {
     quint8 *data = reinterpret_cast<quint8 *>(dest);
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
     data[0] = static_cast<quint8>(src & 0xFF);
     data[1] = static_cast<quint8>((src >> 8) & 0xFF);
-#else // Q_BIG_ENDIAN
-    data[0] = static_cast<quint8>((src >> 8) & 0xFF);
-    data[1] = static_cast<quint8>(src & 0xFF);
-#endif
 }
 
-template <> Q_ALWAYS_INLINE void to_unaligned<quint32>(const quint32 src, void *dest) Q_DECL_NOEXCEPT
+template <> Q_ALWAYS_INLINE void int_to_bytes_little<quint32>(quint32 src, void *dest) Q_DECL_NOEXCEPT
 {
     quint8 *data = reinterpret_cast<quint8 *>(dest);
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
     data[0] = static_cast<quint8>(src & 0xFF);
     data[1] = static_cast<quint8>((src >>  8) & 0xFF);
     data[2] = static_cast<quint8>((src >> 16) & 0xFF);
     data[3] = static_cast<quint8>((src >> 24) & 0xFF);
-#else // Q_BIG_ENDIAN
-    data[0] = static_cast<quint8>((src >> 24) & 0xFF);
-    data[1] = static_cast<quint8>((src >> 16) & 0xFF);
-    data[2] = static_cast<quint8>((src >>  8) & 0xFF);
-    data[3] = static_cast<quint8>(src & 0xFF);
-#endif
 }
 
-template <> Q_ALWAYS_INLINE void to_unaligned<quint64>(const quint64 src, void *dest) Q_DECL_NOEXCEPT
+template <> Q_ALWAYS_INLINE void int_to_bytes_little<quint64>(quint64 src, void *dest) Q_DECL_NOEXCEPT
 {
     quint8 *data = reinterpret_cast<quint8 *>(dest);
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
     data[0] = static_cast<quint8>(src & 0xFF);
     data[1] = static_cast<quint8>((src >>  8) & 0xFF);
     data[2] = static_cast<quint8>((src >> 16) & 0xFF);
@@ -149,7 +177,44 @@ template <> Q_ALWAYS_INLINE void to_unaligned<quint64>(const quint64 src, void *
     data[5] = static_cast<quint8>((src >> 40) & 0xFF);
     data[6] = static_cast<quint8>((src >> 48) & 0xFF);
     data[7] = static_cast<quint8>((src >> 56) & 0xFF);
-#else // Q_BIG_ENDIAN
+}
+
+template <> Q_ALWAYS_INLINE void int_to_bytes_little<qint16>(qint16 src, void *dest) Q_DECL_NOEXCEPT
+{
+    int_to_bytes_little<quint16>(static_cast<quint16>(src), dest);
+}
+
+template <> Q_ALWAYS_INLINE void int_to_bytes_little<qint32>(qint32 src, void *dest) Q_DECL_NOEXCEPT
+{
+    int_to_bytes_little<quint32>(static_cast<quint32>(src), dest);
+}
+
+template <> Q_ALWAYS_INLINE void int_to_bytes_little<qint64>(qint64 src, void *dest) Q_DECL_NOEXCEPT
+{
+    int_to_bytes_little<quint64>(static_cast<quint64>(src), dest);
+}
+
+template <typename T> Q_ALWAYS_INLINE void int_to_bytes_big(T src, void *dest) Q_DECL_NOEXCEPT;
+
+template <> Q_ALWAYS_INLINE void int_to_bytes_big<quint16>(quint16 src, void *dest) Q_DECL_NOEXCEPT
+{
+    quint8 *data = reinterpret_cast<quint8 *>(dest);
+    data[0] = static_cast<quint8>((src >> 8) & 0xFF);
+    data[1] = static_cast<quint8>(src & 0xFF);
+}
+
+template <> Q_ALWAYS_INLINE void int_to_bytes_big<quint32>(quint32 src, void *dest) Q_DECL_NOEXCEPT
+{
+    quint8 *data = reinterpret_cast<quint8 *>(dest);
+    data[0] = static_cast<quint8>((src >> 24) & 0xFF);
+    data[1] = static_cast<quint8>((src >> 16) & 0xFF);
+    data[2] = static_cast<quint8>((src >>  8) & 0xFF);
+    data[3] = static_cast<quint8>(src & 0xFF);
+}
+
+template <> Q_ALWAYS_INLINE void int_to_bytes_big<quint64>(quint64 src, void *dest) Q_DECL_NOEXCEPT
+{
+    quint8 *data = reinterpret_cast<quint8 *>(dest);
     data[0] = static_cast<quint8>((src >> 56) & 0xFF);
     data[1] = static_cast<quint8>((src >> 48) & 0xFF);
     data[2] = static_cast<quint8>((src >> 40) & 0xFF);
@@ -158,7 +223,21 @@ template <> Q_ALWAYS_INLINE void to_unaligned<quint64>(const quint64 src, void *
     data[5] = static_cast<quint8>((src >> 16) & 0xFF);
     data[6] = static_cast<quint8>((src >>  8) & 0xFF);
     data[7] = static_cast<quint8>(src & 0xFF);
-#endif
+}
+
+template <> Q_ALWAYS_INLINE void int_to_bytes_big<qint16>(qint16 src, void *dest) Q_DECL_NOEXCEPT
+{
+    int_to_bytes_big<quint16>(static_cast<quint16>(src), dest);
+}
+
+template <> Q_ALWAYS_INLINE void int_to_bytes_big<qint32>(qint32 src, void *dest) Q_DECL_NOEXCEPT
+{
+    int_to_bytes_big<quint32>(static_cast<quint32>(src), dest);
+}
+
+template <> Q_ALWAYS_INLINE void int_to_bytes_big<qint64>(qint64 src, void *dest) Q_DECL_NOEXCEPT
+{
+    int_to_bytes_big<quint64>(static_cast<quint64>(src), dest);
 }
 
 template <typename T> inline void to_bytes(const T &src, void *dest) Q_DECL_NOEXCEPT
