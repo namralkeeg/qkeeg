@@ -52,7 +52,8 @@ SOURCES += \
     src/hashing/noncryptographic/pjwhash32.cpp \
     src/hashing/noncryptographic/saxhash32.cpp \
     src/hashing/noncryptographic/sdbmhash32.cpp \
-    src/hashing/noncryptographic/superfasthash32.cpp
+    src/hashing/noncryptographic/superfasthash32.cpp \
+    src/hashing/noncryptographic/xxhash32.cpp
 
 HEADERS += \
     src/common/stringutils.hpp \
@@ -81,7 +82,8 @@ HEADERS += \
     src/hashing/noncryptographic/pjwhash32.hpp \
     src/hashing/noncryptographic/saxhash32.hpp \
     src/hashing/noncryptographic/sdbmhash32.hpp \
-    src/hashing/noncryptographic/superfasthash32.hpp
+    src/hashing/noncryptographic/superfasthash32.hpp \
+    src/hashing/noncryptographic/xxhash32.hpp
 
 unix {
     target.path = /usr/lib
