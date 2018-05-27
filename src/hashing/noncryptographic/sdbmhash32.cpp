@@ -44,8 +44,7 @@ void SDBMHash32::hashCore(const void *data, const qint64 &offset, const qint64 &
 {
     const quint8 *current = reinterpret_cast<const quint8*>(data) + offset;
 
-    for (std::size_t i = 0; i < count; ++current, ++i)
-    {
+    for (qint64 i = 0; i < count; ++current, ++i) {
         m_hash = *current + (m_hash << 6) + (m_hash << 16) - m_hash;
     }
 }
