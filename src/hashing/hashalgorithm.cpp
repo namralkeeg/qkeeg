@@ -26,7 +26,10 @@ namespace qkeeg { namespace hashing {
 
 HashAlgorithm::~HashAlgorithm()
 {
-
+    if ((m_hashValue != nullptr) && !m_hashValue.isNull()) {
+        m_hashValue.fill(char(0));
+        m_hashValue.clear();
+    }
 }
 
 QByteArray HashAlgorithm::computeHash(const QByteArray &data)
