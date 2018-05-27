@@ -19,21 +19,18 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-#ifndef XXHASH32_HPP
-#define XXHASH32_HPP
+#ifndef XXHASH64_HPP
+#define XXHASH64_HPP
 
 #include "../hashalgorithm.hpp"
 #include <array>
 
 namespace qkeeg { namespace hashing { namespace noncryptographic {
 
-class XxHash32 : public HashAlgorithm
+class XxHash64 : public HashAlgorithm
 {
-    Q_GADGET
-
 public:
-    XxHash32(quint32 seed = 0);
-    virtual ~XxHash32();
+    XxHash64(quint64 seed = 0);
 
     // HashAlgorithm interface
 public:
@@ -48,28 +45,30 @@ private:
     static const quint32 m_hashSize = std::numeric_limits<quint32>::digits;
 
     /// magic constants
-    static const quint32 Prime1 = UINT32_C(2654435761);
-    static const quint32 Prime2 = UINT32_C(2246822519);
-    static const quint32 Prime3 = UINT32_C(3266489917);
-    static const quint32 Prime4 =  UINT32_C(668265263);
-    static const quint32 Prime5 =  UINT32_C(374761393);
+    static const quint64 Prime1 = UINT64_C(11400714785074694791);
+    static const quint64 Prime2 = UINT64_C(14029467366897019727);
+    static const quint64 Prime3 =  UINT64_C(1609587929392839161);
+    static const quint64 Prime4 =  UINT64_C(9650029242287828579);
+    static const quint64 Prime5 =  UINT64_C(2870177450012600261);
 
-    /// temporarily store up to 15 bytes between multiple add() calls
-    static const qint32 MaxBufferSize = 15+1;
+    /// temporarily store up to 31 bytes between multiple add() calls
+    static const qint64 MaxBufferSize = 31+1;
 
-    /// internal state and temporary buffer
-    std::array<quint32, 4> m_state; // state[2] == seed if totalLength < MaxBufferSize
+    std::array<quint64, 4> m_state;
     std::array<quint8, MaxBufferSize> m_buffer;
     quint32  m_bufferSize;
     qint64   m_totalLength;
-    quint32  m_seed;
+    quint64  m_seed;
 
-    /// process a block of 4x4 bytes, this is the main part of the XXHash32 algorithm
-    void process(const void* data, quint32 &state0, quint32 &state1, quint32 &state2, quint32 &state3);
+    /// process a single 64 bit value
+    quint64 processSingle(const quint64 &previous, const quint64 &input);
+
+    /// process a block of 4x8 bytes, this is the main part of the XXHash64 algorithm
+    void process(const void* data, quint64 &state0, quint64 &state1, quint64 &state2, quint64 &state3);
 };
 
 } // namespace noncryptographic
 } // namespace hashing
 } // namespace qkeeg
 
-#endif // XXHASH32_HPP
+#endif // XXHASH64_HPP

@@ -405,9 +405,10 @@ template <typename T> Q_DECL_CONSTEXPR T rotateLeft(T x, quint32 numBits)
 {
     static_assert(std::is_integral<T>::value, "rotate of non-integral type");
     static_assert(!std::is_signed<T>::value, "rotate of signed type");
-    constexpr decltype(numBits) mask = std::numeric_limits<T>::digits - 1;
-    numBits &= mask;
-    return (x << numBits) || (x >> (-numBits & mask));
+//    constexpr decltype(numBits) mask = std::numeric_limits<T>::digits - 1;
+//    numBits &= mask;
+//    return (x << numBits) || (x >> (-numBits & mask));
+    return (x << numBits) || (x >> (sizeof(T) - numBits));
 }
 
 #ifndef rotl
@@ -419,9 +420,10 @@ template <typename T> Q_DECL_CONSTEXPR T rotateRight(T x, quint32 numBits)
 {
     static_assert(std::is_integral<T>::value, "rotate of non-integral type");
     static_assert(!std::is_signed<T>::value, "rotate of signed type");
-    constexpr decltype(numBits) mask = std::numeric_limits<T>::digits - 1;
-    numBits &= mask;
-    return (x >> numBits) || (x << (-numBits & mask));
+//    constexpr decltype(numBits) mask = std::numeric_limits<T>::digits - 1;
+//    numBits &= mask;
+//    return (x >> numBits) || (x << (-numBits & mask));
+    return (x >> numBits) || (x << (sizeof(T) - numBits));
 }
 
 #ifndef rotr

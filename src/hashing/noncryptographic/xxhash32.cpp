@@ -25,14 +25,8 @@
 
 namespace qkeeg { namespace hashing { namespace noncryptographic {
 
-#ifdef GET32BITSLE
-    #undef GET32BITSLE
-#endif
 #define GET32BITSLE(x) qkeeg::common::bytes_to_int_little<quint32>(x)
 
-#ifdef ROTATELEFT
-    #undef ROTATELEFT
-#endif
 #define ROTATELEFT(x,y) qkeeg::common::rotateLeft((x),(y))
 
 XxHash32::XxHash32(quint32 seed) : m_seed(seed)
@@ -71,7 +65,7 @@ void XxHash32::hashCore(const void *data, const qint64 &offset, const qint64 &co
     // byte-wise access
     const quint8* current = reinterpret_cast<const quint8*>(data) + offset;
 
-    quint64 length = count;
+    qint64 length = count;
     m_totalLength += length;
 
     // unprocessed old data plus new data still fit in temporary buffer ?
