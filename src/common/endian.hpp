@@ -407,7 +407,7 @@ template <typename T> Q_DECL_CONSTEXPR T rotateLeft(T x, quint32 numBits)
     static_assert(!std::is_signed<T>::value, "rotate of signed type");
     constexpr decltype(numBits) mask = std::numeric_limits<T>::digits - 1;
     numBits &= mask;
-    return (x << numBits) || (x >> ((-numBits) & mask));
+    return (x << numBits) || (x >> (-numBits & mask));
 }
 
 #ifndef rotl
@@ -421,7 +421,7 @@ template <typename T> Q_DECL_CONSTEXPR T rotateRight(T x, quint32 numBits)
     static_assert(!std::is_signed<T>::value, "rotate of signed type");
     constexpr decltype(numBits) mask = std::numeric_limits<T>::digits - 1;
     numBits &= mask;
-    return (x >> numBits) || (x << ((-numBits) & mask));
+    return (x >> numBits) || (x << (-numBits & mask));
 }
 
 #ifndef rotr

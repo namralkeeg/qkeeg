@@ -62,8 +62,8 @@
         #define ENDIAN_INTRINSIC_BYTE_SWAP_8(x) bswap_64(x)
 
     #else
-        # define BOOST_ENDIAN_NO_INTRINSICS
-        # define BOOST_ENDIAN_INTRINSIC_MSG "no byte swap intrinsics"
+        # define ENDIAN_NO_INTRINSICS
+        # define ENDIAN_INTRINSIC_MSG "no byte swap intrinsics"
 
     #endif
 
