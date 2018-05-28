@@ -55,6 +55,12 @@ Sha1::Sha1()
     initialize();
 }
 
+Sha1::~Sha1()
+{
+    std::fill(m_buffer.begin(), m_buffer.end(), 0);
+    std::fill(m_hash.begin(), m_hash.end(), 0);
+}
+
 void Sha1::initialize()
 {
     m_hashValue.clear();

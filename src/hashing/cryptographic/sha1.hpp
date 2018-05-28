@@ -33,6 +33,7 @@ class Sha1 : public HashAlgorithm
 
 public:
     Sha1();
+    virtual ~Sha1();
 
     // HashAlgorithm interface
 public:
