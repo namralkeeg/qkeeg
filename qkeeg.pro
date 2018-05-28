@@ -55,7 +55,8 @@ SOURCES += \
     src/hashing/noncryptographic/superfasthash32.cpp \
     src/hashing/noncryptographic/xxhash32.cpp \
     src/hashing/noncryptographic/xxhash64.cpp \
-    src/hashing/cryptographic/md5.cpp
+    src/hashing/cryptographic/md5.cpp \
+    src/hashing/cryptographic/sha1.cpp
 
 HEADERS += \
     src/common/stringutils.hpp \
@@ -87,7 +88,8 @@ HEADERS += \
     src/hashing/noncryptographic/superfasthash32.hpp \
     src/hashing/noncryptographic/xxhash32.hpp \
     src/hashing/noncryptographic/xxhash64.hpp \
-    src/hashing/cryptographic/md5.hpp
+    src/hashing/cryptographic/md5.hpp \
+    src/hashing/cryptographic/sha1.hpp
 
 unix {
     target.path = /usr/lib
